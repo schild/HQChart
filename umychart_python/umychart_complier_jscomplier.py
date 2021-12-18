@@ -47,9 +47,7 @@ class JSComplier:
 
         parser=JSParser(code)
         parser.Initialize()
-        program=parser.ParseScript()
-        ast=program
-        return ast
+        return parser.ParseScript()
 
     @staticmethod   #执行器
     def Execute(code,option=SymbolOption()) :
@@ -97,12 +95,11 @@ class IndexResult:
         self.Time=None
 
     # 把返回的结果转换成json格式
-    def ToJson(self) : 
-        try :
-            jsonData=json.dumps(self, default=lambda obj:obj.__dict__)    # ScriptIndexConsole.Serializable)
-            return jsonData
-            # with open('data.txt','w') as file:
-            #     file.write(jsonData)
+    def ToJson(self): 
+        try:
+            return json.dumps(self, default=lambda obj:obj.__dict__)
+                # with open('data.txt','w') as file:
+                #     file.write(jsonData)
         except BaseException as error :
             print(error)
 
@@ -116,8 +113,8 @@ class ScriptIndexConsole:
         self.AST=None           # 语法树
         self.Parser=None
 
-    def ExecuteScript(self, obj=SymbolOption(), rebuild=True) : # rebuild 是否重新编译执行
-        try :
+    def ExecuteScript(self, obj=SymbolOption(), rebuild=True): # rebuild 是否重新编译执行
+        try:
             print('[ScriptIndexConsole::ExecuteScript] ', self.Script)
             if (self.AST and self.Parser and rebuild==False):
                 parser=self.Parser
@@ -132,16 +129,25 @@ class ScriptIndexConsole:
                 self.Parser=parser
                 print('[ScriptIndexConsole.ExecuteScript] parser finish.')
 
-            option=SymbolOption(symbol=obj.Symbol, hqDataType=obj.HQDataType, right=obj.Right, period=obj.Period, 
-                    request=RequestOption(maxDataCount=obj.MaxRequestDataCount, maxMinuteDayCount=obj.MaxRequestMinuteDayCount), 
-                    args=self.Arguments if obj.Arguments==None else obj.Arguments) # 个股指定指标参数优先使用
-            
+            option = SymbolOption(
+                symbol=obj.Symbol,
+                hqDataType=obj.HQDataType,
+                right=obj.Right,
+                period=obj.Period,
+                request=RequestOption(
+                    maxDataCount=obj.MaxRequestDataCount,
+                    maxMinuteDayCount=obj.MaxRequestMinuteDayCount,
+                ),
+                args=self.Arguments if obj.Arguments is None else obj.Arguments,
+            )
+
+
             if obj and obj.ProcCreateSymbolData:
                 option.ProcCreateSymbolData=obj.ProcCreateSymbolData
 
             execute=JSExecute(ast,option)
             execute.JobList=parser.Node.GetDataJobList()
-            outVar=execute.Execute() 
+            outVar=execute.Execute()
             print('[ScriptIndexConsole.ExecuteScript]  execute finish.')
 
             result=IndexResult(outVar=outVar)
@@ -151,25 +157,20 @@ class ScriptIndexConsole:
                 result.Time=execute.SymbolData.Data.GetTime()   # 数据对应的时间
 
             return result
-        except Error as error :
+        except (Error, ValueError) as error:
             result=IndexResult(error=error)
             return result
 
-        except ValueError as error:
-            result=IndexResult(error=error)
-            return result
-        
         except BaseException as error :
             result=IndexResult(error=error)
             return result
 
     @staticmethod   # 把返回的结果转换成json格式
-    def ToJson(data) : 
-        try :
-            jsonData=json.dumps(data, default=lambda obj:obj.__dict__)    # ScriptIndexConsole.Serializable)
-            return jsonData
-            # with open('data.txt','w') as file:
-            #     file.write(jsonData)
+    def ToJson(data): 
+        try:
+            return json.dumps(data, default=lambda obj:obj.__dict__)
+                # with open('data.txt','w') as file:
+                #     file.write(jsonData)
         except BaseException as error :
             print(error)
 

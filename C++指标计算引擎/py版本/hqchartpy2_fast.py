@@ -77,7 +77,6 @@ class IHQData(object):
     def GetDataByNumbers(self, symbol,funcName,args, period,right,kcount, jobID):
         if (funcName==u"GPJYVALUE") :
             return self.GetGPJYValue(symbol, args, period, right, kcount, jobID)
-        pass
 
     def GetDataByName(self, symbol,funcName,period,right,kcount, jobID) :
         if (funcName==u"CAPITAL"):
@@ -143,16 +142,15 @@ class IHQData(object):
         return None
 
     # 星期五
-    @staticmethod 
-    def GetFirday(value) :
+    @staticmethod
+    def GetFirday(value):
         date = datetime.datetime.strptime(str(value), '%Y%m%d')
         day=date.weekday()
         if day==4 : 
             return value
 
         date+=datetime.timedelta(days=4-day)
-        fridayDate= date.year*10000+date.month*100+date.day
-        return fridayDate
+        return date.year*10000+date.month*100+date.day
 
     # 是否是沪深指数
     @staticmethod
@@ -181,9 +179,8 @@ class FastHQChart :
         return "{0}.{1}".format(int(version/100000), (version%100000))
 
     # 初始化
-    @staticmethod 
-    # key= 授权码
-    def Initialization(Key=None) :
+    @staticmethod
+    def Initialization(Key=None):
         # 加载dll
         strOS = platform.system()
         dllVersion=HQChartPy2.GetVersion()
@@ -202,19 +199,18 @@ class FastHQChart :
         log="*  运行系统:{0}".format(strOS)
         print(log)
         print("*******************************************************************************************")
-        pass
 
     @staticmethod
     def Run(jsonConfig, hqData, proSuccess=None,procFailed=None):
-        callbackConfig={}
-        callbackConfig['GetKLineData']=hqData.GetKLineData
-        callbackConfig['GetKLineData2']=hqData.GetKLineData2
-        callbackConfig['GetDataByNumber']=hqData.GetDataByNumber
-        callbackConfig['GetDataByNumbers']=hqData.GetDataByNumbers
-        callbackConfig['GetDataByName']=hqData.GetDataByName
-        callbackConfig['GetDataByString']=hqData.GetDataByString
-        callbackConfig["GetIndexScript"]=hqData.GetIndexScript
-        
+        callbackConfig = {
+            'GetKLineData': hqData.GetKLineData,
+            'GetKLineData2': hqData.GetKLineData2,
+            'GetDataByNumber': hqData.GetDataByNumber,
+            'GetDataByNumbers': hqData.GetDataByNumbers,
+            'GetDataByName': hqData.GetDataByName,
+            'GetDataByString': hqData.GetDataByString,
+            'GetIndexScript': hqData.GetIndexScript,
+        }
 
         # 计算结果返回
         if (proSuccess) :
@@ -222,8 +218,7 @@ class FastHQChart :
         if (procFailed) :
             callbackConfig['Failed']=procFailed
 
-        bResult=HQChartPy2.Run(jsonConfig,callbackConfig)
-        return bResult
+        return HQChartPy2.Run(jsonConfig,callbackConfig)
 
     # 获取试用注册码
     @staticmethod
@@ -242,10 +237,11 @@ class FastHQChart :
                 print("获取测试账户请求失败, {0}".format(response.text))
                 return None
             jsonData=response.json()
-            if (jsonData['code']==0) :
-                if ('message' in jsonData.keys()):
-                    if (jsonData['message']!=None) :
-                        print(jsonData['message'])
+            if (jsonData['code']==0):
+                if ('message' in jsonData.keys()) and (
+                    jsonData['message'] != None
+                ):
+                    print(jsonData['message'])
                 return jsonData['key']
         except requests.exceptions.HTTPError as http_err:
             print("获取测试账户请求异常,{0}".format(http_err))

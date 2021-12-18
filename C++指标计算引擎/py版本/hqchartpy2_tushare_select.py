@@ -28,9 +28,8 @@ class HQSelectResult():
         # print (data)
         if (self.dfResult.empty==True):
             self.dfResult=data
-        else:
-            if (len(data)>0) :
-                self.dfResult=pd.concat([self.dfResult,data], ignore_index=True)
+        elif (len(data)>0):
+            self.dfResult=pd.concat([self.dfResult,data], ignore_index=True)
            
         # print (self.dfResult)
         
@@ -108,7 +107,7 @@ CSI_300 = [
 
 
 if __name__ == '__main__':
-    if (TushareConfig.HQCHART_AUTHORIZATION_KEY==None) :
+    if TushareConfig.HQCHART_AUTHORIZATION_KEY is None:
         TushareConfig.HQCHART_AUTHORIZATION_KEY=FastHQChart.GetTrialAuthorize(mac="A4-B1-C1-4B-4D-7B") # 请求试用账户, 把mac地址改成你本机的mac地址
 
     # 初始化HQChartPy2

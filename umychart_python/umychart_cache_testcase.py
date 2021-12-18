@@ -53,9 +53,9 @@ class CacheData:
            CacheData.Cache[item]=stock
 
     @staticmethod
-    def LoadCacheData(symbolData) : # 加载自己的外部数据
+    def LoadCacheData(symbolData): # 加载自己的外部数据
         print("[CacheData::LoadCacheData] start load [{0},Period={1},Right={2}] cache to hqchart".format(symbolData.Symbol, symbolData.Period, symbolData.Right))
-        if (not symbolData.Symbol in CacheData.Cache.keys()) :
+        if symbolData.Symbol not in CacheData.Cache.keys():
             # 报错缓存里面没这个股票数据
             return 
 
@@ -88,8 +88,6 @@ class CacheData:
         # 最新行情
         # DYNAINFO(4) 
         symbolData.LatestKCache[4]=15  # 最新行情单值
-
-        pass
 
 
 

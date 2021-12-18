@@ -66,14 +66,11 @@ class JSAlgorithm() :
         return True
 
     @staticmethod   # 计算数组均值
-    def ArrayAverage(data,n) :
+    def ArrayAverage(data,n):
         dataLen=len(data)
         averageData=JSAlgorithm.CreateArray(dataLen) # 平均值
-        for i in range(n-1, dataLen) :
-            total=0
-            for j in range(n) :
-                if JSAlgorithm.IsNumber(data[i-j]) :
-                    total+=data[i-j]
+        for i in range(n-1, dataLen):
+            total = sum(data[i-j] for j in range(n) if JSAlgorithm.IsNumber(data[i-j]))
             averageData[i]=total/n
         return averageData
 
@@ -546,32 +543,22 @@ class JSAlgorithm() :
     #
     #########################################################################
 
-    def IF(self,data,trueData,falseData) :
+    def IF(self,data,trueData,falseData):
         isNumber=JSAlgorithm.IsNumber(data)
         isNumber2=JSAlgorithm.IsNumber(trueData)
         isNumber3=JSAlgorithm.IsNumber(falseData)
-        
+
         # 单数值
-        if isNumber :
-            if isNumber2 and isNumber3 :
-                return trueData if data else falseData
+        if isNumber:
             return trueData if data else falseData
-        
         # 都是数组
         count=len(data)
         result=JSComplierHelper.CreateArray(count)
-        for i in range(count) :
-            if data[i] :
-                if isNumber2 :
-                    result[i]=trueData
-                else :
-                    result[i]=trueData[i]
-            else :
-                if isNumber3 :
-                    result[i]=falseData
-                else :
-                    result[i]=falseData[i]
-
+        for i in range(count):
+            if data[i]:
+                result[i] = trueData if isNumber2 else trueData[i]
+            else:
+                result[i] = falseData if isNumber3 else falseData[i]
         return result
 
     
@@ -592,9 +579,9 @@ class JSAlgorithm() :
     # 用法:REF(X,A),引用A周期前的X值.A可以是变量.
     # 平滑处理:当引用不到数据时进行的操作.此函数中,平滑时使用上一个周期的引用值.
     # 例如:REF(CLOSE,BARSCOUNT(C)-1)表示第二根K线的收盘价.
-    def REF(self,data,n) :
+    def REF(self,data,n):
         result=[]
-        if JSAlgorithm.IsNumber(n) :
+        if JSAlgorithm.IsNumber(n):
             count=len(data)
             n=int(n)
             if count<=0 :
@@ -602,13 +589,13 @@ class JSAlgorithm() :
             if n>=count :
                 return result
 
-            result=data[0:count-n]
+            result = data[:count-n]
 
             fristData=data[0]  # 平滑使用第1个数据
-            for i in range(n) :
+            for _ in range(n):
                 result.insert(0,fristData)
 
-        else :   # n 为数组的情况
+        else:   # n 为数组的情况
             nCount=len(n)
             count=len(data)
             result=JSComplierHelper.CreateArray(count)
@@ -632,9 +619,9 @@ class JSAlgorithm() :
     # 用法: REFV(X,A),引用A周期前的X值.A可以是变量.
     # 平滑处理:当引用不到数据时进行的操作.
     # 例如: REFV(CLOSE,BARSCOUNT(C)-1)表示第二根K线的收盘价.
-    def REFV(self,data,n) :
+    def REFV(self,data,n):
         result=[]
-        if JSAlgorithm.IsNumber(n) :
+        if JSAlgorithm.IsNumber(n):
             count=len(data)
             n=int(n)
             if count<=0 :
@@ -642,12 +629,12 @@ class JSAlgorithm() :
             if n>=count :
                 return result
 
-            result=data[0:count-n]
+            result = data[:count-n]
 
-            for i in range(n) :
+            for _ in range(n):
                 result.insert(0,JSComplierHelper.NoneNumber)
 
-        else :   # n 为数组的情况
+        else:   # n 为数组的情况
             nCount=len(n)
             count=len(data)
             result=JSComplierHelper.CreateArray(count)
@@ -669,9 +656,9 @@ class JSAlgorithm() :
     # 平滑处理:当引用不到数据时进行的操作.此函数中,平滑时使用上一个周期的引用值.
     # 例如:  TT:=IF(C>O,1,2);
     #       REFX(CLOSE,TT);表示阳线引用下一周期的收盘价,阴线引用日后第二周期的收盘价.
-    def REFX(self,data,n) :
+    def REFX(self,data,n):
         result=[]
-        if JSAlgorithm.IsNumber(n) :
+        if JSAlgorithm.IsNumber(n):
             count=len(data)
             n=int(n)
             if count<=0 :
@@ -682,10 +669,10 @@ class JSAlgorithm() :
             result=data[n:count]
             lastData=data[count-1]
 
-            for i in range(n) :
+            for _ in range(n):
                 result.append(lastData)  # 使用最后一个数据平滑
 
-        else :   # n 为数组的情况
+        else:   # n 为数组的情况
             nCount=len(n)
             count=len(data)
             result=JSComplierHelper.CreateArray(count)
@@ -709,9 +696,9 @@ class JSAlgorithm() :
     # 用法: REFXV(X,A),引用A周期后的X值.A可以是变量.
     # 平滑处理:当引用不到数据时进行的操作.
     # 例如: REFXV(CLOSE,1)表示下一周期的收盘价,在日线上就是明天收盘价
-    def REFXV(self,data,n) :
+    def REFXV(self,data,n):
         result=[]
-        if JSAlgorithm.IsNumber(n) :
+        if JSAlgorithm.IsNumber(n):
             count=len(data)
             n=int(n)
             if count<=0 :
@@ -719,12 +706,12 @@ class JSAlgorithm() :
             if n>=count :
                 return result
 
-            result=data[0:count-n]
+            result = data[:count-n]
 
-            for i in range(n) :
+            for _ in range(n):
                 result.append(JSComplierHelper.NoneNumber)
 
-        else :   # n 为数组的情况
+        else:   # n 为数组的情况
             nCount=len(n)
             count=len(data)
             result=JSComplierHelper.CreateArray(count)
@@ -833,24 +820,24 @@ class JSAlgorithm() :
     # 用法:
     # MA(X,N):X的N日简单移动平均,算法(X1+X2+X3+...+Xn)/N,N支持变量
     # N 支持数组
-    def MA(self, data,n) :
+    def MA(self, data,n):
         if (JSAlgorithm.IsArray(n)):
             return self.MA_ARRAY(data,n)
 
-        dayCount=int(n) 
+        dayCount=int(n)
         if dayCount<=0:
             dayCount=1
-        
+
         result=[]
         if not data or len(data)<=0:
             return result
-        
+
         result=JSComplierHelper.CreateArray(len(data)) # 初始化数据
         for i in range(len(data)) :
             if JSAlgorithm.IsNumber(data[i]):
                 break
 
-        data2=data[0:] # 复制一份数据出来
+        data2 = data[:]
         days=-1
         for i in range(i,len(data2)) :
             days+=1
@@ -907,11 +894,11 @@ class JSAlgorithm() :
 
 
     # 指数平均数指标 EMA(close,10)
-    def EMA(self,data,n) :
+    def EMA(self,data,n):
         if (JSAlgorithm.IsArray(n)):
             return self.EMA_ARRAY(data,n)
 
-        dayCount=int(n)   
+        dayCount=int(n)
         result = []
         offset=0
         if offset>=len(data) :
@@ -923,12 +910,12 @@ class JSAlgorithm() :
         for i in range(len(data)) :
             if JSAlgorithm.IsNumber(data[i]) :
                 break
-        
+
         offset=i
         p1Index=offset
         p2Index=offset+1
         result[p1Index]=data[p1Index]
-        for i in range(offset+1,len(data)) :
+        for offset in range(offset+1,len(data)):
             result[p2Index]=((2*data[p2Index]+(dayCount-1)*result[p1Index]))/(dayCount+1)
             p1Index+=1
             p2Index+=1
@@ -942,29 +929,27 @@ class JSAlgorithm() :
             return []
 
         result=JSAlgorithm.CreateArray(dataCount)
-        for i in range(len(n)) :
+        for i in range(len(n)):
             period=n[i]
             if (not JSAlgorithm.IsNumber(period)) :
                 continue
             period=int(period)
             if (period<=0) :
                 continue
-            if (period>i+1) :
-                period=i+1
+            period = min(period, i+1)
             ema=None
             lastEMA=None
             EMAFactor=[ 2.0/ (period + 1), (period - 1.0) / (period + 1.0)]
-            for j in range(period) :
+            for j in range(period):
                 index=i-(period-j-1)
                 value=data[index]
                 if (not JSAlgorithm.IsNumber(value)):
                     continue
-                if (lastEMA==None):
+                if lastEMA is None:
                     ema=value
-                    lastEMA=ema
-                else :
+                else:
                     ema = EMAFactor[0] * value + EMAFactor[1] * lastEMA
-                    lastEMA=ema
+                lastEMA=ema
             if (ema!=None) :
                 result[i]=ema
 
@@ -995,11 +980,11 @@ class JSAlgorithm() :
 
         return result
 
-    def SMA_ARRAY(self,data,n,m) :
+    def SMA_ARRAY(self,data,n,m):
         dataCount=len(data)
         if (dataCount<=0):
             return []
-        
+
         result=JSAlgorithm.CreateArray(dataCount)
         for i in range(len(n)):
             period=n[i]
@@ -1008,22 +993,19 @@ class JSAlgorithm() :
             period=int(period)
             if (period<=0):
                 continue
-            if (period<i+1):
-                period=i+1
-
+            period = max(period, i+1)
             sma=None
             lastSMA=None
-            for j in range(period) :
+            for j in range(period):
                 index=i-(period-j-1)
                 value=data[index]
                 if (not JSAlgorithm.IsNumber(value)):
                     continue
-                if (lastSMA==None):
+                if lastSMA is None:
                     sma=value
-                    lastSMA=sma
-                else :
+                else:
                     sma=(m*data[i]+(period-m)*lastSMA)/period
-                    lastSMA=sma
+                lastSMA=sma
             if (sma!=None):
                 result[i]=sma
 
@@ -1034,10 +1016,10 @@ class JSAlgorithm() :
     # 用法: DMA(X,A),求X的动态移动平均.
     # 算法: 若Y=DMA(X,A)则 Y=A*X+(1-A)*Y',其中Y'表示上一周期Y值,A必须小于1.
     # 例如:DMA(CLOSE,VOL/CAPITAL)表示求以换手率作平滑因子的平均价
-    def DMA(self,data,data2) :
+    def DMA(self,data,data2):
         result = []
         len1, len2 = len(data), len(data2)
-        if len1<0 or len2!=len2 :
+        if len1 < 0:
             return result
 
         result = JSAlgorithm.CreateArray(len(data))
@@ -1058,7 +1040,7 @@ class JSAlgorithm() :
     # 返回加权移动平均
     # 用法:WMA(X,N):X的N日加权移动平均.
     # 算法:Yn=(1*X1+2*X2+...+n*Xn)/(1+2+...+n)
-    def WMA(self,data, n) :
+    def WMA(self,data, n):
         result=[]
         len1=len(data)
         if not data or len1<=0 :
@@ -1066,7 +1048,7 @@ class JSAlgorithm() :
 
         result=JSAlgorithm.CreateArray(len1) # 初始化
 
-        if (JSAlgorithm.IsArray(n)) :
+        if (JSAlgorithm.IsArray(n)):
             for i in range(len(n)):
                 period=n[i]
                 if (not JSAlgorithm.IsNumber(period)) :
@@ -1074,9 +1056,7 @@ class JSAlgorithm() :
                 period=int(period)
                 if (period<=0):
                     continue
-                if (period>i+1) :
-                    period=i+1
-
+                period = min(period, i+1)
                 start=0
                 preValue=0
                 for j in range(period) :
@@ -1086,7 +1066,7 @@ class JSAlgorithm() :
                     if (JSAlgorithm.IsNumber(value)) :
                         preValue=value
                         break
-                
+
                 if (start>=period) :
                     continue
 
@@ -1104,25 +1084,25 @@ class JSAlgorithm() :
                     k+=1
 
                 result[i] = sum / count
-                    
-        else :
+
+        else:
             dayCount=int(n)
             if dayCount<=0 :
                 return result
 
             start=0
-            for i in range(len1) :
+            for i in range(len1):
                 start=i
-                if JSAlgorithm.IsNumber(data[i]) :
+                if JSAlgorithm.IsNumber(data[start]):
                     break
-            
-            data2 = data[0:]
+
+            data2 = data[:]
             days =int(-1)
             for i in range(start,len1) :
                 days+=1
                 if days < dayCount-1 :
                     continue
-                
+
                 preValue = data2[i - (dayCount-1)]
                 sum = 0
                 count = 0
@@ -1136,9 +1116,9 @@ class JSAlgorithm() :
 
                     count += dayCount - j
                     sum += value * (dayCount - j)
-                
+
                 result[i] = sum / count
-            
+
         return result
 
     
@@ -1155,22 +1135,22 @@ class JSAlgorithm() :
         for i in range(dataLen) :
             if JSAlgorithm.IsNumber(data[i]) :
                 break
-        
+
         if dayCount<1 or i+dayCount>=dataLen :
             return result
 
         sum = 0
-        data2 = data[0:]
-        for i in range(i,i+dayCount) :
-            if not JSAlgorithm.IsNumber(data2[i]) and i-1 >= 0 :
+        data2 = data[:]
+        for i in range(i,i+dayCount):
+            if not JSAlgorithm.IsNumber(data2[i]) and i >= 1:
                 data2[i] = data2[i-1]
                 sum += data2[i]
 
         result[i-1] = sum / dayCount
-        for i in range(i,dataLen) :
-            if self.IsNumber(result[i-1]) and self.IsNumber(data[i]) :
+        for i in range(i,dataLen):
+            if self.IsNumber(result[i-1]) and self.IsNumber(data[i]):
                 result[i] = (data[i]+result[i-1]*(dayCount-1)) / dayCount
-            elif i-1 > -1 and self.IsNumber(result[i-1]) :
+            elif i > 0 and self.IsNumber(result[i - 1]):
                 result[i] = result[i-1]
 
         return result
@@ -1201,7 +1181,7 @@ class JSAlgorithm() :
         return result
 
     # 加权平滑平均,MEMA[i]=SMA[i]*para+(1-para)*SMA[i-1] para=2/(1+__para)
-    def EXPMEMA(self,data,dayCount) :
+    def EXPMEMA(self,data,dayCount):
         result=[]
         dataLen=len(data)
         if dayCount>=dataLen : 
@@ -1211,18 +1191,14 @@ class JSAlgorithm() :
         for i in range(dataLen) :
             if JSAlgorithm.IsNumber(data[i]) :
                 break
-        
+
         index=i
         sum=0
-        for i in range(dayCount) :
+        for _ in range(dayCount):
             if index>=dataLen : 
                 break
 
-            if JSAlgorithm.IsNumber(data[index]) :
-                sum+=data[index]
-            else :
-                sum+=data[index-1]
-
+            sum += data[index] if JSAlgorithm.IsNumber(data[index]) else data[index-1]
             index+=1
 
         result[index-1]=sum/dayCount
@@ -1237,7 +1213,7 @@ class JSAlgorithm() :
     # 向前累加到指定值到现在的周期数.
     # 用法:SUMBARS(X,A):将X向前累加直到大于等于A,返回这个区间的周期数
     # 例如:SUMBARS(VOL,CAPITAL)求完全换手到现在的周期数
-    def SUMBARS(self, data, data2) :
+    def SUMBARS(self, data, data2):
         result = []
         if not data or not data2:
             return result
@@ -1250,22 +1226,20 @@ class JSAlgorithm() :
             if JSAlgorithm.IsNumber(data[start]) :
                 break
 
-        for i in range(len1-1,start-1,-1) :
+        for i in range(len1-1,start-1,-1):
             total = 0
             for j in range(i,start-1,-1) :
                 if total>=data2[i]:
                     break
                 total += data[j]
 
-            if j < start: 
-                pass
-            else :
+            if j >= start:
                 result[i] = i - j
 
         for i in range(start+1,len1) :
             if result[i]==JSComplierHelper.NoneNumber :
                 result[i] = result[i-1]
-        
+
         return result
 
     
@@ -1326,26 +1300,26 @@ class JSAlgorithm() :
         dataLen=len(data)
         result = JSAlgorithm.CreateArray(dataLen)
         isNumber=JSAlgorithm.IsNumber(n)
-        if not isNumber : # n是一个数组 周期变动
+        if not isNumber: # n是一个数组 周期变动
             max=None
             nLen=len(n)
-            for i in range(dataLen) :
+            for i in range(dataLen):
                 if i>nLen :
                     continue
                 max=None
                 count=int(n[i])
-                if count>0 and count<=i :
+                if count>0 and count<=i:
                     for j in range(i-count,i+1) :
                         if max==None or max<data[j] :
                             max=data[j]
-                else :
+                else:
                     count=i
-                    for j in range(i+1) :
-                        if max==None or  max<data[j] :
+                    for j in range(i+1):
+                        if max is None or max < data[j]:
                             max=data[j]
                 result[i]=max
-            
-        else :
+
+        else:
             n=int(n)
             if n>dataLen :
                  return result
@@ -1384,27 +1358,27 @@ class JSAlgorithm() :
     # 求最低值。
     # 用法：　LLV(X，N)　求N周期内X最低值，N=0则从第一个有效值开始。
     # 例如：　LLV(LOW，0)　表示求历史最低价。
-    def LLV(self,data,n) :
+    def LLV(self,data,n):
         dataLen=len(data)
         result = JSAlgorithm.CreateArray(dataLen)
         isNumber=JSAlgorithm.IsNumber(n)
-        if not isNumber : # n是数组
-            for i in range(dataLen) :
+        if not isNumber: # n是数组
+            for i in range(dataLen):
                 if i>=dataLen :
                     continue
                 min=None
                 count=int(n[i])
-                if count>0 and count<=i :
+                if count>0 and count<=i:
                     for j in range(i-count,i+1):
                         if min==None or min>data[j] :
                             min=data[j]
-                else :
+                else:
                     count=i
-                    for j in range(i+1) :
-                        if min==None or min>data[j] :
+                    for j in range(i+1):
+                        if min is None or min > data[j]:
                             min=data[j]
                 result[i]=min
-        else :
+        else:
             n=int(n)
             if n>dataLen :
                 return result
@@ -1425,7 +1399,7 @@ class JSAlgorithm() :
         return result
 
     # STD(X,N) 返回估算标准差
-    def STD(self,data,n) :
+    def STD(self,data,n):
         if not data or len(data)<=0 :
             return []
 
@@ -1435,31 +1409,35 @@ class JSAlgorithm() :
             n=dataLen-1
 
         averageData=JSAlgorithm.ArrayAverage(data,n) # 平均值
-        for i in range(dataLen) :
-            total=0
-            for j in range(n) :
-                if JSAlgorithm.Is2Number(data[i-j],averageData[i]) :
-                    total+=(data[i-j]-averageData[i])*(data[i-j]-averageData[i])
+        for i in range(dataLen):
+            total = sum(
+                (data[i - j] - averageData[i]) * (data[i - j] - averageData[i])
+                for j in range(n)
+                if JSAlgorithm.Is2Number(data[i - j], averageData[i])
+            )
+
             result[i]=math.sqrt(total/n)
 
         return result
 
     # 平均绝对方差
-    def AVEDEV(self,data,n) :
+    def AVEDEV(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
-        
+
         dataLen=len(data)
         result=JSAlgorithm.CreateArray(dataLen)
         if n<=0:
             n=dataLen-1
 
         averageData=JSAlgorithm.ArrayAverage(data,n) # 平均值
-        for i in range(n-1,dataLen) :
-            total=0
-            for j in range(n) :
-                if JSAlgorithm.Is2Number(data[i-j],averageData[i]) :
-                    total+=abs(data[i-j]-averageData[i])
+        for i in range(n-1,dataLen):
+            total = sum(
+                abs(data[i - j] - averageData[i])
+                for j in range(n)
+                if JSAlgorithm.Is2Number(data[i - j], averageData[i])
+            )
+
             result[i]=total/n
 
         return result
@@ -1534,14 +1512,14 @@ class JSAlgorithm() :
     # 用法: SUM(X,N),统计N周期中X的总和,N=0则从第一个有效值开始.
     # 例如: SUM(VOL,0)表示统计从上市第一天以来的成交量总和
     # N 支持变量数组
-    def SUM(self, data,n) :
+    def SUM(self, data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
-        dataLen=len(data)   
+        dataLen=len(data)
         result=JSAlgorithm.CreateArray(dataLen)
 
-        if (JSAlgorithm.IsArray(n)) :
+        if (JSAlgorithm.IsArray(n)):
             for i in range(len(n)) :
                 period=n[i]
                 if (not JSAlgorithm.IsNumber(period)):
@@ -1561,26 +1539,23 @@ class JSAlgorithm() :
 
                 result[i]=value
 
-        else :
+        else:
             n=int(n)
             if dataLen<n:
                 return []
 
-            if n==0 :
+            if n==0:
                 result[0]=data[0]
                 for i in range(1,dataLen) :
                     result[i] = result[i-1]+data[i]
 
-            else :
-                j=0
-                for i in range(n-1, dataLen) :
+            else:
+                for j, i in enumerate(range(n-1, dataLen)):
                     for k in range(n) :
                         if k==0:
                             result[i]=data[k+j]
                         else :
                             result[i]+=data[k+j]
-                    j+=1
-
         return result
 
     
@@ -1591,16 +1566,16 @@ class JSAlgorithm() :
     def BARSCOUNT(self,data):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
-        dataLen=len(data)  
+        dataLen=len(data)
         result=JSAlgorithm.CreateArray(dataLen,0)
 
         days=None
-        for i in range(dataLen) :
-            if days==None :
+        for i in range(dataLen):
+            if days is None:
                 if not JSAlgorithm.IsNumber(data[i]) :
                     continue
                 days=0
-                
+
             result[i]=days
             days+=1
 
@@ -1608,7 +1583,7 @@ class JSAlgorithm() :
 
     # DEVSQ 数据偏差平方和
     # DEVSQ(X，N) 　返回数据偏差平方和。
-    def DEVSQ(self,data,n) :
+    def DEVSQ(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
@@ -1632,20 +1607,16 @@ class JSAlgorithm() :
             j+=1
 
         if j==num:
-            DEV = 0
             i-=1
-            for k in range(num) :
-                DEV += (data[i-k]-E) * (data[i-k]-E)
+            DEV = sum((data[i-k]-E) * (data[i-k]-E) for k in range(num))
             result[i] = DEV
             i+=1
 
-        for i in range(i,datanum) :
+        for i in range(i,datanum):
             E += (data[i] - data[i-num]) / num
-            DEV=0
-            for k in range(num) :
-                DEV += (data[i-k]-E) * (data[i-k]-E)
+            DEV = sum((data[i-k]-E) * (data[i-k]-E) for k in range(num))
             result[i] = DEV
-            
+
         return result
 
     # NOT 取反
@@ -1708,20 +1679,20 @@ class JSAlgorithm() :
 
     # SLOPE 线性回归斜率
     # SLOPE(X，N)　 返回线性回归斜率。
-    def SLOPE(self,data,n) :
+    def SLOPE(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
         dataLen=len(data)
         if n<1 or n>=dataLen :
             return []
-        
+
         result=JSAlgorithm.CreateArray(dataLen)
         for start in range(dataLen) :
             if JSAlgorithm.IsNumber(data[start]) :
                 break
 
-        for i in range(start+n-1,dataLen) :
+        for i in range(start+n-1,dataLen):
             x, y, xy, xx = 0,0,0,0
             for j in range(n) :
                 if j>i: 
@@ -1729,8 +1700,8 @@ class JSAlgorithm() :
                 x+=(i-j)       # 数据索引相加
                 y+=data[i-j]   # 数据相加
 
-            x=x/n
-            y=y/n
+            x /= n
+            y /= n
 
             for j in range(n) :
                 if j>i :
@@ -1747,7 +1718,7 @@ class JSAlgorithm() :
 
     # STDP 总体标准差
     # STDP(X，N)　 返回总体标准差。
-    def STDP(self,data,n) :
+    def STDP(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
@@ -1770,13 +1741,13 @@ class JSAlgorithm() :
             i+=1
 
         if j == num:
-            MidResult = num*SigmaPowerX - SigmaX*SigmaX
+            MidResult = num*SigmaPowerX - SigmaX**2
             result[i-1] = math.sqrt(MidResult) / num
-        
-        for i in range(i,datanum) :
+
+        for i in range(i,datanum):
             SigmaPowerX += data[i]*data[i] - data[i-num]*data[i-num]
             SigmaX += data[i] - data[i-num]
-            MidResult = num*SigmaPowerX - SigmaX*SigmaX
+            MidResult = num*SigmaPowerX - SigmaX**2
             result[i] = math.sqrt(MidResult) / num
 
         return result
@@ -1811,7 +1782,7 @@ class JSAlgorithm() :
 
     # VARP 总体样本方差
     # VARP(X，N)　 返回总体样本方差 。
-    def VARP(self,data,n) :
+    def VARP(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
@@ -1834,14 +1805,14 @@ class JSAlgorithm() :
             SigmaX += data[i]
             i+=1
 
-        if j == num :
-            result[i-1] = (num*SigmaPowerX - SigmaX*SigmaX) / (num*num)
+        if j == num:
+            result[i-1] = (num*SigmaPowerX - SigmaX**2) / (num*num)
 
-        for i in range(i,datanum) : 
+        for i in range(i,datanum): 
             SigmaPowerX += data[i]*data[i] - data[i-num]*data[i-num]
             SigmaX += data[i] - data[i-num]
-            result[i] = (num*SigmaPowerX - SigmaX*SigmaX) / (num*num)
-        
+            result[i] = (num*SigmaPowerX - SigmaX**2) / (num*num)
+
         return result
 
     # RANGE(A,B,C)表示A>B AND A<C;
@@ -1893,14 +1864,14 @@ class JSAlgorithm() :
 
         return result
 
-    def EXIST(self,data,n) :
+    def EXIST(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
-        if (JSAlgorithm.IsArray(n)) :
+        if (JSAlgorithm.IsArray(n)):
             dataLen = len(data)
             result=JSAlgorithm.CreateArray(dataLen,0)
-            for i in range(len(n)) :
+            for i in range(len(n)):
                 if (i>=dataLen):
                     break
                 period=n[i]
@@ -1909,9 +1880,7 @@ class JSAlgorithm() :
                 period=int(period)
                 if (period<=0):
                     continue
-                if (period>i+1) :
-                    period=i+1
-
+                period = min(period, i+1)
                 bFind=False
                 for j in range(period):
                     index=i-(period-j-1)
@@ -1919,14 +1888,8 @@ class JSAlgorithm() :
                     if (JSAlgorithm.IsNumber(value) and value>0):
                         bFind=True
                         break
-                if (bFind):
-                    result[i]=1
-                else:
-                    result[i]=0
-
-            return result  
-
-        else :
+                result[i] = 1 if (bFind) else 0
+        else:
             dataLen = len(data)
             result=JSAlgorithm.CreateArray(dataLen)
             latestID=None # 最新满足条件的数据索引
@@ -1941,7 +1904,8 @@ class JSAlgorithm() :
                 else :
                     result[i]=0
 
-            return result
+
+        return result
 
     def TFILTER(self, data,data2,n) :
         # TODO: 待完成
@@ -1991,24 +1955,23 @@ class JSAlgorithm() :
     # N周期内第一个条件成立到当前的周期数.
     # 用法: BARSSINCEN(X,N):N周期内第一次X不为0到现在的天数,N为常量
     # 例如: BARSSINCEN(HIGH>10,10)表示10个周期内股价超过10元时到当前的周期数
-    def BARSSINCEN(self, data,n) :
+    def BARSSINCEN(self, data,n):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
-    
+
         dataLen = len(data)
         result=JSAlgorithm.CreateArray(dataLen)
-        
+
         day=None
-        for i in range(dataLen) :
-            if day==None :
+        for i in range(dataLen):
+            if day is None:
                 if data[i] :
                     day=0
-            else :
-                if data[i] :
-                    if day+1<n :
-                        day+=1
-                else :
-                    day=None
+            elif data[i]:
+                if day+1<n :
+                    day+=1
+            else:
+                day=None
 
             if day: 
                 result[i]=day
@@ -2019,18 +1982,18 @@ class JSAlgorithm() :
     # 第一个条件成立到当前的周期数.
     # 用法: BARSSINCE(X):第一次X不为0到现在的天数
     # 例如: BARSSINCE(HIGH>10)表示股价超过10元时到当前的周期数
-    def BARSSINCE(self, data) :
+    def BARSSINCE(self, data):
         if not JSAlgorithm.IsVaildArray(data) :
             return []
 
         dataLen = len(data)
         result=JSAlgorithm.CreateArray(dataLen)
         day=None
-        for i in range(dataLen) :
-            if day==None :
+        for i in range(dataLen):
+            if day is None:
                 if data[i] :
                     day=0
-            else :
+            else:
                 day+=1
 
             if day :
@@ -2103,15 +2066,15 @@ class JSAlgorithm() :
     # 返回是否连涨周期数.
     # 用法: UPNDAY(CLOSE,M)
     # 表示连涨M个周期,M为常量
-    def UPNDAY(self, data,n) :
+    def UPNDAY(self, data,n):
         if not JSAlgorithm.IsVaildArray(data) or n<1 :
             return []
 
         dataLen=len(data)
         result=JSAlgorithm.CreateArray(dataLen,0)
         days=0
-        for i in range(dataLen) :
-            if i-1<0 :
+        for i in range(dataLen):
+            if i < 1:
                 continue
 
             if not JSAlgorithm.IsNumber(data[i]) or  not JSAlgorithm.IsNumber(data[i-1]) : # 无效数都不算连涨
@@ -2133,15 +2096,15 @@ class JSAlgorithm() :
     # 返回是否连跌周期.
     # 用法: DOWNNDAY(CLOSE,M)
     # 表示连跌M个周期,M为常量
-    def DOWNNDAY(self,data,n) :
+    def DOWNNDAY(self,data,n):
         if not JSAlgorithm.IsVaildArray(data) or n<1 :
             return []
 
         dataLen=len(data)
         result=JSAlgorithm.CreateArray(dataLen,0)
         days=0
-        for i in range(dataLen) :
-            if i-1<0 :
+        for i in range(dataLen):
+            if i < 1:
                 continue
             if not JSAlgorithm.IsNumber(data[i]) or not JSAlgorithm.IsNumber(data[i-1]) : # 无效数都不算连涨
                 days=0
@@ -2238,18 +2201,18 @@ class JSAlgorithm() :
 
     # 两条线维持一定周期后交叉.
     # 用法:LONGCROSS(A,B,N)表示A在N周期内都小于B,本周期从下方向上穿过B时返回1,否则返回0
-    def LONGCROSS(self,data,data2,n) :
+    def LONGCROSS(self,data,data2,n):
         if not JSAlgorithm.IsArray(data) and not JSAlgorithm.IsArray(data2) :
             return []
 
         if n<1 : 
             return []
 
-        len1 , len2= len(data), len(data2)  
+        len1 , len2= len(data), len(data2)
         count=max(len1,len2)
         result=JSAlgorithm.CreateArray(count,0)
-        for i in range(count) :
-            if i-1<0:
+        for i in range(count):
+            if i < 1:
                 continue
             if i>=len1 or i>=len2 :
                 continue
@@ -2307,13 +2270,11 @@ class JSAlgorithm() :
     # RELATE(X,Y,N)=(∑[(Xi-Avg(X))(Yi-Avg(y))])/N ÷ √((∑(Xi-Avg(X))^2)/N * (∑(Yi-Avg(Y))^2)/N)
     # 其中 avg(x)表示x的N周期均值：  avg(X) = (∑Xi)/N  
     # √(...)表示开平方
-    def RELATE(self,data,data2,n) :
+    def RELATE(self,data,data2,n):
         if not JSAlgorithm.IsVaildArray(data) or not JSAlgorithm.IsVaildArray(data2) :
             return []
 
-        if n<1:
-            n=1
-
+        n = max(n, 1)
         dataAverage=JSAlgorithm.ArrayAverage(data,n)
         data2Average=JSAlgorithm.ArrayAverage(data2,n)
 
@@ -2338,29 +2299,25 @@ class JSAlgorithm() :
 
     
     # COVAR(X,Y,N) 返回X和Y的N周期的协方差
-    def COVAR(self,data,data2,n) :
+    def COVAR(self,data,data2,n):
         if not JSAlgorithm.IsArray(data) or not JSAlgorithm.IsArray(data2) :
             return []
 
-        if n<1:
-            n=1
-
+        n = max(n, 1)
         dataAverage=JSAlgorithm.ArrayAverage(data,n)
         data2Average=JSAlgorithm.ArrayAverage(data2,n)
         len1, len2= len(data), len(data2)
         count=max(len1,len2)
         result=JSAlgorithm.CreateArray(count)
 
-        for i in range(count) :
+        for i in range(count):
             if i>=len1 or i>=len2 or i>=len(dataAverage) or i>=len(data2Average) :
                 continue
 
             average=dataAverage[i]
             average2=data2Average[i]
 
-            total=0
-            for j in range(i-n+1, i+1) :
-                total+=(data[j]-average)*(data2[j]-average2)  
+            total = sum((data[j]-average)*(data2[j]-average2) for j in range(i-n+1, i+1))
             result[i]=(total/n)
 
         return result
@@ -2591,26 +2548,20 @@ class JSAlgorithm() :
     # 抛物转向.
     # 用法: SAR(N,S,M),N为计算周期,S为步长,M为极值
     # 例如: SAR(10,2,20)表示计算10日抛物转向,步长为2%,极限值为20%
-    def SAR(self,n,step,exValue) :
+    def SAR(self,n,step,exValue):
         stockData= self.SymbolData.Data
         dataLen=len(stockData.Data)
         if n>=dataLen  :
             return []
-        
+
         result=JSComplierHelper.CreateArray(dataLen)
         high, low =None, None
-        for i in range(n) :
+        for i in range(n):
             item=stockData.Data[i]
-            if high==None:
+            if high is None or high < item.High:
                 high=item.High
-            elif high<item.High :
-                high=item.High
-
-            if low==None : 
+            if low is None or low > item.Low: 
                 low=item.Low
-            elif low>item.Low :
-                low=item.Low
-
         SAR_LONG=0
         SAR_SHORT=1
         position=SAR_LONG
@@ -2660,7 +2611,7 @@ class JSAlgorithm() :
     # 抛物转向点.
     # 用法: SARTURN(N,S,M),N为计算周期,S为步长,M为极值,若发生向上转向则返回1,若发生向下转向则返回-1,否则为0
     # 其用法与SAR函数相同
-    def SARTURN(self,n,step,exValue) :
+    def SARTURN(self,n,step,exValue):
         sar=self.SAR(n,step,exValue)
         stockData= self.SymbolData.Data
         dataLen=len(stockData)
@@ -2669,11 +2620,8 @@ class JSAlgorithm() :
         for index in range(len(sar)) :
             if JSAlgorithm.IsNumber(sar[index]) :
                 break
-        
-        flag=0
-        if index<dataLen :
-            flag=stockData.Data[index].Close>sar[index]
 
+        flag = stockData.Data[index].Close>sar[index] if index<dataLen else 0
         for i in range(index+1,dataLen) :
             item=stockData.Data[i]
             if item.Close<sar[i] and flag :
@@ -2720,33 +2668,24 @@ class JSAlgorithm() :
 
 
     # 计算截至到某一天的历史所有筹码
-    def CalculateChip(self,index,exchangeData,hisData,dRate) :
+    def CalculateChip(self,index,exchangeData,hisData,dRate):
         result=Variant()
         result.Min, result.Max, result.Data = None, None, []
         seed=1 # 筹码历史衰减换手系数
         max, min= None, None
         result.Data=JSComplierHelper.CreateArray(index+1)
-        for i in range(index, -1,-1) :
+        for i in range(index, -1,-1):
             item=Variant()    # Vol:量 High:最高 Low:最低
             kData=hisData[i]
-            if i==index :
-                item.Vol=kData.Vol*exchangeData[i]
-            else :
-                item.Vol=kData.Vol*seed
-
+            item.Vol = kData.Vol*exchangeData[i] if i==index else kData.Vol*seed
             item.Date=kData.Date
             item.High=kData.High
             item.Low=kData.Low
 
-            if max==None :
+            if max is None or max < item.High:
                 max=item.High
-            elif max<item.High :
-                max=item.High
-            if min==None :
+            if min is None or min < item.Low:
                 min=item.Low
-            elif min<item.Low :
-                min=item.Low
-
             result.Data[i]=item
 
             seed*=(1-(exchangeData[i]/100)*dRate)	# 换手率累乘
@@ -2758,7 +2697,7 @@ class JSAlgorithm() :
     # 获利盘比例.
     # 用法: WINNER(CLOSE),表示以当前收市价卖出的获利盘比例,例如返回0.1表示10%获利盘;WINNER(10.5)表示10.5元价格的获利盘比例
     # 该函数仅对日线分析周期有效
-    def WINNER(self,data,node) :
+    def WINNER(self,data,node):
         kData=self.SymbolData.Data
         if (not kData or kData.GetCount()<=0) :
             return []
@@ -2768,9 +2707,9 @@ class JSAlgorithm() :
 
         priceRange=kData.GetMaxMin()
         dMaxPrice, dMinPrice = priceRange["Max"], priceRange["Min"]
-        if (dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice>1000 or dMinPrice < 0) :
+        if dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice > 1000:
             self.ThrowUnexpectedNode(node,'WINNER() 历史K线最大最小值错误, 超出(0,1000)范围')
-            
+
         lMaxPrice=int(dMaxPrice*100 + 1)
         lMinPrice=int(dMinPrice*100 - 1)
         lLow, lHigh, lClose = 0, 0, 0
@@ -2784,7 +2723,7 @@ class JSAlgorithm() :
         aryPerVol=JSAlgorithm.CreateArray(lSpeed,0)
 
         dHSL, dTotalVol, dVol = 0, 0, 0
-        for i in range(dataLen) :
+        for i in range(dataLen):
             if (i >= len(aryCapital)) :
                 continue
             if (aryCapital[i]<1):
@@ -2804,36 +2743,30 @@ class JSAlgorithm() :
                 aryPerVol[j]=0
 
             lHalf =int((lLow + lHigh + 2 * lClose) / 4)
-            if (lHalf == lHigh or lHalf == lLow) :
+            if lHalf in [lHigh, lLow]:
                 aryPerVol[lHalf] += kItem.Vol
-            else :
+            else:
                 dVH = kItem.Vol / (lHalf - lLow)
                 for k in range(lLow,lHalf) :
                     aryPerVol[k] += (k - lLow)*(dVH / (lHalf - lLow))
                 for k in range(lHalf,lHigh+1) :
                     aryPerVol[k] += (k - lHigh)*(dVH / (lHalf - lHigh))
 
-            dTotalVol = 0
             for j in range(lLow,lHigh+1) :
                 aryVolPrice[j] += aryPerVol[j]
 
-            for j in range(lSpeed) :
-                dTotalVol += aryVolPrice[j]
-
+            dTotalVol = sum(aryVolPrice[j] for j in range(lSpeed))
             if isinstance(data,list):
                 lHigh = int(min((data[i] * 100) - lMinPrice, lSpeed - 1))
             else :
                 lHigh = int(min((data * 100) - lMinPrice, lSpeed - 1))
 
-            dVol=0
-            for j in range(lHigh+1) :
-                dVol += aryVolPrice[j]
-
-            if (dTotalVol > 0) :
+            dVol = sum(aryVolPrice[j] for j in range(lHigh+1))
+            if (dTotalVol > 0):
                 result[i]=dVol / dTotalVol
-            elif (i - 1 >= 0) :
+            elif i >= 1:
                 result[i] = result[i - 1]
-        
+
         return result
 
         
@@ -2901,7 +2834,7 @@ class JSAlgorithm() :
     # 成本分布情况.
     # 用法: COST(10),表示10%获利盘的价格是多少,即有10%的持仓量在该价格以下,其余90%在该价格以上,为套牢盘
     # 该函数仅对日线分析周期有效
-    def COST(self,data, node) :
+    def COST(self,data, node):
         rate=data/100
         if (rate<0.000001 or rate>1) :
             return []
@@ -2915,9 +2848,9 @@ class JSAlgorithm() :
 
         priceRange=kData.GetMaxMin()
         dMaxPrice, dMinPrice = priceRange["Max"], priceRange["Min"]
-        if (dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice>1000 or dMinPrice < 0) :
+        if dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice > 1000:
             self.ThrowUnexpectedNode(node,'WINNER() 历史K线最大最小值错误, 超出(0,1000)范围')
-            
+
         lMaxPrice=int(dMaxPrice*100 + 1)
         lMinPrice=int(dMinPrice*100 - 1)
         lLow, lHigh, lClose = 0, 0, 0
@@ -2931,7 +2864,7 @@ class JSAlgorithm() :
         aryPerVol=JSAlgorithm.CreateArray(lSpeed,0)
 
         dHSL, dTotalVol, dVol, dCost = 0, 0, 0,0
-        for i in range(dataLen) :
+        for i in range(dataLen):
             if (i >= len(aryCapital)) :
                 continue
 
@@ -2950,22 +2883,19 @@ class JSAlgorithm() :
                     aryPerVol[j]=0
 
                 lHalf =int((lLow + lHigh + 2 * lClose) / 4)
-                if (lHalf == lHigh or lHalf == lLow) :
+                if lHalf in [lHigh, lLow]:
                     aryPerVol[lHalf] += kItem.Vol
-                else :
+                else:
                     dVH = kItem.Vol / (lHalf - lLow)
                     for k in range(lLow,lHalf) :
                         aryPerVol[k] += (k - lLow)*(dVH / (lHalf - lLow))
                     for k in range(lHalf,lHigh+1) :
                         aryPerVol[k] += (k - lHigh)*(dVH / (lHalf - lHigh))
 
-                dTotalVol = 0
                 for j in range(lLow,lHigh+1) :
                     aryVolPrice[j] += aryPerVol[j]
 
-                for j in range(lSpeed) :
-                    dTotalVol += aryVolPrice[j]
-
+                dTotalVol = sum(aryVolPrice[j] for j in range(lSpeed))
                 dCost, dVol = 0,0
                 for j in range(lSpeed) :
                     dVol+=aryVolPrice[j]
@@ -3046,7 +2976,7 @@ class JSAlgorithm() :
 
     # 远期成本分布比例.
     # 用法: PPART(10),表示10前的成本占总成本的比例,0.2表示20%
-    def PPART(self, n, node) :
+    def PPART(self, n, node):
         startDay=int(n)
         if (startDay<0):
             return []
@@ -3058,22 +2988,21 @@ class JSAlgorithm() :
         dataLen=kData.GetCount()
         aryCapital=self.SymbolData.GetFinanceCacheData(7,node) # 流通股本
         result=JSAlgorithm.CreateArray(dataLen)    
-        
-        for i in range(startDay, dataLen) :
+
+        for i in range(startDay, dataLen):
             start = i - startDay
             if (start < 0) :
                 continue
-            
+
             #前n日成交量和
             partVol = 0
             for j in range(startDay) :	
                 kItem=kData.GetItem(j + start)
                 partVol += kItem.Vol
-            
-            if i < len(aryCapital) :
-                if (aryCapital[i]>0) :
-                    value=1 - (partVol / aryCapital[i])
-                    result[i]=value
+
+            if i < len(aryCapital) and (aryCapital[i] > 0):
+                value=1 - (partVol / aryCapital[i])
+                result[i]=value
 
         return result
     
@@ -3090,9 +3019,9 @@ class JSAlgorithm() :
 
         priceRange=kData.GetMaxMin()
         dMaxPrice, dMinPrice = priceRange["Max"], priceRange["Min"]
-        if (dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice>1000 or dMinPrice < 0) :
+        if dMinPrice > 1000 or dMinPrice < 0 or dMaxPrice > 1000:
             self.ThrowUnexpectedNode(node,'COSTEX() 历史K线最大最小值错误, 超出(0,1000)范围')
-            
+
         lMaxPrice=int(dMaxPrice*100 + 1)
         lMinPrice=int(dMinPrice*100 - 1)
         lLow, lHigh, lClose = 0, 0, 0
@@ -3106,7 +3035,7 @@ class JSAlgorithm() :
         aryPerVol=JSAlgorithm.CreateArray(lSpeed,0)
 
         dHSL, dTotalVol, dVol, dVola, dPerVola, dVolb, dPerVolb = 0, 0, 0, 0, 0, 0, 0
-        for i in range(dataLen) :
+        for i in range(dataLen):
             if (i >= len(aryCapital)) :
                 continue
 
@@ -3125,27 +3054,24 @@ class JSAlgorithm() :
                     aryPerVol[j]=0
 
                 lHalf =int((lLow + lHigh + 2 * lClose) / 4)
-                if (lHalf == lHigh or lHalf == lLow) :
+                if lHalf in [lHigh, lLow]:
                     aryPerVol[lHalf] += kItem.Vol
-                else :
+                else:
                     dVH = kItem.Vol / (lHalf - lLow)
                     for k in range(lLow,lHalf) :
                         aryPerVol[k] += (k - lLow)*(dVH / (lHalf - lLow))
                     for k in range(lHalf,lHigh+1) :
                         aryPerVol[k] += (k - lHigh)*(dVH / (lHalf - lHigh))
 
-                dTotalVol = 0
                 for j in range(lLow,lHigh+1) :
                     aryVolPrice[j] += aryPerVol[j]
 
-                for j in range(lSpeed) :
-                    dTotalVol += aryVolPrice[j]
-
+                dTotalVol = sum(aryVolPrice[j] for j in range(lSpeed))
                 if isinstance(data,list):
-                    if (data[i]==None) :
+                    if data[i] is None:
                         continue
                     lHigh = int(min((data[i] * 100) - lMinPrice, lSpeed - 1))
-                else :
+                else:
                     lHigh = int(min((data * 100) - lMinPrice, lSpeed - 1))
 
                 dVola, dPerVola = 0,0
@@ -3153,25 +3079,25 @@ class JSAlgorithm() :
                     dVola += aryVolPrice[j]
                     dPerVola += (0.01*(j + lMinPrice))*aryVolPrice[j]
 
-                if isinstance(data2,list) :
-                    if (data2[i]==None):
+                if isinstance(data2,list):
+                    if data2[i] is None:
                         continue
                     lHigh = int(min((data2[i] * 100) - lMinPrice, lSpeed - 1))
-                else :
+                else:
                     lHigh = int(min((data2 * 100) - lMinPrice, lSpeed - 1))
 
                 dVolb, dPerVolb = 0, 0
                 for j in range(lHigh+1) :
                     dVolb += aryVolPrice[j]
                     dPerVolb += (0.01*(j + lMinPrice))*aryVolPrice[j]
-                
+
                 dVol = dVola - dVolb
                 dPerVolRange = dPerVola - dPerVolb
-                if abs(dPerVolRange)>0.001 and dVol!=0 :
+                if abs(dPerVolRange)>0.001 and dVol!=0:
                     result[i]=dPerVolRange / dVol
-                elif (i-1>=0) :
+                elif i >= 1:
                     result[i] = result[i - 1]
-           
+
         return result
 
     # 近期获利盘比例.

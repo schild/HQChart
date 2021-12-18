@@ -27,28 +27,28 @@ class TestCase :
             testCode+='\n'
 
         result=JSComplier.Execute(testCode,self.Option)
-        return True if result else False 
+        return bool(result) 
         
 
 def Test_Tokenize():
     code1='VARHIGH:=IF(VAR1<=REF(HH,-1),REF(H,BARSLAST(VAR1>=REF(HH,1))),DRAWNULL),COLORYELLOW;'
     code2='VAR1=((SMA(MAX((CLOSE - LC),0),3,1) / SMA(ABS((CLOSE - LC)),3,1)) * 100);'
     tokens=JSComplier.Tokenize(code1+code2)
-    return True if tokens else False
+    return bool(tokens)
 
 def Test_Parse():
     code1='VARHIGH:=IF(VAR1<=REF(HH,-1),REF(H,BARSLAST(VAR1>=REF(HH,1))),DRAWNULL),COLORYELLOW;'
     code2='VAR1=((SMA(MAX((CLOSE - LC),0),3,1) / SMA(ABS((CLOSE - LC)),3,1)) * 100);'
     ast=JSComplier.Parse(code1+code2)
-    return True if ast else False
+    return bool(ast)
 
 def Test_REF():
     result=JSComplier.Execute('VAR2:C-REF(O,1)')
-    return True if result else False
+    return bool(result)
 
-def Test_Add() :
+def Test_Add():
     result=JSComplier.Execute('VAR2:C+100')
-    return True if result else False 
+    return bool(result) 
 
 def Test_Multiply():
     code=[
@@ -56,7 +56,7 @@ def Test_Multiply():
         "VAR3:100*100;"
         ]
     result=JSComplier.Execute(code[0]+code[1])
-    return True if result else False 
+    return bool(result) 
 
 
 def Test_MAX_MIN():
@@ -68,9 +68,9 @@ def Test_MAX_MIN():
         'VAR5:MIN(C,4);'
         ]
     result=JSComplier.Execute(code[0]+code[1]+code[2]+code[4]+code[3])
-    return True if result else False 
+    return bool(result) 
 
-def Test_MA() :
+def Test_MA():
     code=[
         'VAR2:MA(C,5);', 
         'VAR3:MA(C,10);',
@@ -80,7 +80,7 @@ def Test_MA() :
         ]
 
     result=JSComplier.Execute(code[0]+code[1]+code[2]+code[3])
-    return True if result else False 
+    return bool(result) 
 
 def Test_EMA():
     code=[
@@ -90,7 +90,7 @@ def Test_EMA():
         'VAR4:EMA(C,30);', 
         ]
     result=JSComplier.Execute(code[0]+code[1]+code[2]+code[3])
-    return True if result else False 
+    return bool(result) 
 
 def Test_SMA():
     code=[
@@ -100,7 +100,7 @@ def Test_SMA():
         'VAR4:SMA(C,30,10);', 
         ]
     result=JSComplier.Execute(code[0]+code[1]+code[2]+code[3])
-    return True if result else False 
+    return bool(result) 
 
 def Test_DMA():
     code=[
@@ -108,17 +108,17 @@ def Test_DMA():
         'VAR2:DMA(C,O/C);', 
         ]
     result=JSComplier.Execute(code[0]+code[1])
-    return True if result else False 
+    return bool(result) 
 
-def Test_WMA() :
+def Test_WMA():
     code=[
         'VAR3:C;',
         'VAR2:WMA(C,20);', 
         ]
     result=JSComplier.Execute(code[0]+code[1])
-    return True if result else False 
+    return bool(result) 
 
-def Test_SUMBARS() :
+def Test_SUMBARS():
     code=[
         'VAR3:SUMBARS(C,O)',
         'VAR2:C;', 
@@ -128,7 +128,7 @@ def Test_SUMBARS() :
     option.Symbol='000001.sz'
     option.HQDataType=HQ_DATA_TYPE.MINUTE_ID
     result=JSComplier.Execute(code[0]+code[1],option)
-    return True if result else False 
+    return bool(result) 
 
 def Test_INDEX():
     code=[
@@ -141,7 +141,7 @@ def Test_INDEX():
     option.Period=5
 
     result=JSComplier.Execute(code[0]+code[1]+code[2],option)
-    return True if result else False 
+    return bool(result) 
 
 def Test_COUNT():
     code=[
@@ -153,9 +153,9 @@ def Test_COUNT():
     option=SymbolOption()
 
     result=JSComplier.Execute(code[0]+code[1]+code[2],option)
-    return True if result else False 
+    return bool(result) 
 
-def Test_HHV_HHL() :
+def Test_HHV_HHL():
     case =TestCase(
         code=[
         'VAR3:HHV(C,5);',
@@ -165,8 +165,7 @@ def Test_HHV_HHL() :
         'VAR4:LLV(H,10);',
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 def Test_STD():
     case =TestCase(
@@ -178,8 +177,7 @@ def Test_STD():
         'VAR4:STD(H,0);',
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 def Test_AVEDEV():
     case =TestCase(
@@ -191,10 +189,9 @@ def Test_AVEDEV():
         'VAR4:AVEDEV(H,0);',
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
-def Test_CROSS() :
+def Test_CROSS():
     case =TestCase(
         code=[
         'VAR3:CROSS(C,O);',
@@ -202,10 +199,9 @@ def Test_CROSS() :
         'VAR2:CROSS(O,C);', 
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
-def Test_MULAR() :
+def Test_MULAR():
     case =TestCase(
         code=[
         'VAR3:MULAR(C,5);',
@@ -213,11 +209,10 @@ def Test_MULAR() :
         'VAR2:MULAR(O,30);', 
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 
-def Test_SUM() :
+def Test_SUM():
     case =TestCase(
         code=[
         'VAR3:SUM(C,5);',
@@ -225,8 +220,7 @@ def Test_SUM() :
         'VAR2:BARSCOUNT(O);', 
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 
 def Test_DEVSQ():
@@ -237,8 +231,7 @@ def Test_DEVSQ():
         'VAR2:DEVSQ(O,5);', 
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 def Test_FINANCE(): # 财务数据测试
     case =TestCase(
@@ -269,8 +262,7 @@ def Test_FINANCE(): # 财务数据测试
         'TT5:COST(10);',
         ])
 
-    result=case.Run()
-    return result
+    return case.Run()
 
 # 派生数据类 重写的自己需要数据
 class MySymbolData(JSSymbolData):
@@ -278,8 +270,7 @@ class MySymbolData(JSSymbolData):
 
 # 创建自己的数据类
 def CreateMySymbolData(ast, option=None, procThrow=None):
-    obj=MySymbolData(ast,option,procThrow)
-    return obj
+    return MySymbolData(ast,option,procThrow)
 
 
 def Test_ScriptIndexConsole():

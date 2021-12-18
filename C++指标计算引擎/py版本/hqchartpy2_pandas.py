@@ -7,7 +7,7 @@ from hqchartpy2_fast import FastHQChart,IHQData,PERIOD_ID
 
 class HQChartPy2Helper:
     @staticmethod
-    def JsonDataToPandas(jsData, symbol=None) :  # 指标json结果数据转pandas
+    def JsonDataToPandas(jsData, symbol=None):  # 指标json结果数据转pandas
         indexData = json.loads(jsData)
         date=indexData["Date"]
         data={ "Date":date }
@@ -23,5 +23,4 @@ class HQChartPy2Helper:
             if (item["Type"]!=0):
                 continue
             data[item["Name"]]=item["Data"]
-        df = pd.DataFrame(data)
-        return df
+        return pd.DataFrame(data)

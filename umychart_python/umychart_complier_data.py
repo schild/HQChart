@@ -132,8 +132,8 @@ class ChartData:
         self.DataType=dataType
 
     @staticmethod # 是否是日线周期  0=日线 1=周线 2=月线 3=年线 9=季线 21=双周 [40001-50000) 自定义日线 (isIncludeBase 是否包含基础日线周期)
-    def IsDayPeriod(period, isIncludeBase) :
-        if period==1 or period==2 or period==3 or period==9 or period==21 :
+    def IsDayPeriod(period, isIncludeBase):
+        if period in [1, 2, 3, 9, 21]:
             return True
         if period>PERIOD_ID.CUSTOM_DAY_PERIOD_START and period<=PERIOD_ID.CUSTOM_DAY_PERIOD_END :
             return True
@@ -142,8 +142,8 @@ class ChartData:
         return False
 
     @staticmethod # 是否是分钟周期 4=1分钟 5=5分钟 6=15分钟 7=30分钟 8=60分钟 11=120分钟 12=240分钟 [20001-30000) 自定义分钟 (isIncludeBase 是否包含基础1分钟周期)
-    def IsMinutePeriod(period,isIncludeBase) :
-        if (period==5 or period==6 or period==7 or period==8 or period==11 or period==12) :
+    def IsMinutePeriod(period,isIncludeBase):
+        if period in [5, 6, 7, 8, 11, 12]:
             return True
         if (period>PERIOD_ID.CUSTOM_MINUTE_PERIOD_START and period<=PERIOD_ID.CUSTOM_MINUTE_PERIOD_END) :
             return True
@@ -247,18 +247,18 @@ class ChartData:
             result[i]=self.Data[i].Time
         return result
 
-    def GetWeek(self) :
+    def GetWeek(self):
         result=[None] * len(self.Data)
-        for i in range(len(self.Data)) :
+        for i in range(len(self.Data)):
             value=self.Data[i].Date
-            if value==None :
+            if value is None:
                 result[i]=None
                 continue
 
             date = datetime.datetime.strptime(str(value), '%Y%m%d')
             day=date.weekday()
             result[i]=day+1
-                
+
         return result
 
     
@@ -325,11 +325,11 @@ class ChartData:
             return self.GetMinutePeriodData(period)
 
     # 计算周,月,年
-    def GetDayPeriodData(self, period) :
+    def GetDayPeriodData(self, period):
         result=[]
         startDate=0
         newData=None
-        for dayData in self.Data :
+        for dayData in self.Data:
             isNewData=False
 
             if period==1 : # 周线
@@ -337,7 +337,7 @@ class ChartData:
                 if  fridayDate!=startDate :
                     isNewData=True
                     startDate=fridayDate
-               
+
             elif period==2 : # 月线
                 if int(dayData.Date/100)!=int(startDate/100) :
                     isNewData=True
@@ -346,13 +346,13 @@ class ChartData:
                 if int(dayData.Date/10000)!=int(startDate/10000) :
                     isNewData=True
                     startDate=dayData.Date
-                  
-            if isNewData :
+
+            if isNewData:
                 newData=HistoryData()
                 newData.Date=dayData.Date
                 result.append(newData)
 
-                if dayData.Open==None or dayData.Close==None:
+                if dayData.Open is None or dayData.Close is None:
                     continue
 
                 newData.Open=dayData.Open
@@ -363,13 +363,13 @@ class ChartData:
                 newData.Vol=dayData.Vol
                 newData.Amount=dayData.Amount
                 newData.FlowCapital=dayData.FlowCapital
-            else :
-                if newData==None : 
+            else:
+                if newData is None: 
                     continue
-                if dayData.Open==None or dayData.Close==None :
+                if dayData.Open is None or dayData.Close is None:
                     continue
 
-                if newData.Open==None or newData.Close==None :
+                if newData.Open is None or newData.Close is None:
                     newData.Open=dayData.Open
                     newData.High=dayData.High
                     newData.Low=dayData.Low
@@ -378,7 +378,7 @@ class ChartData:
                     newData.Vol=dayData.Vol
                     newData.Amount=dayData.Amount
                     newData.FlowCapital=dayData.FlowCapital
-                else :
+                else:
                     if newData.High<dayData.High :
                         newData.High=dayData.High
                     if newData.Low>dayData.Low :
@@ -389,22 +389,21 @@ class ChartData:
                     newData.Amount+=dayData.Amount
                     newData.FlowCapital+=dayData.FlowCapital
                     newData.Date=dayData.Date
-         
+
         return result
 
-    @staticmethod 
-    def GetFirday(value) :
+    @staticmethod
+    def GetFirday(value):
         date = datetime.datetime.strptime(str(value), '%Y%m%d')
         day=date.weekday()
         if day==4 : 
             return value
 
         date+=datetime.timedelta(days=4-day)
-        fridayDate= date.year*10000+date.month*100+date.day
-        return fridayDate
+        return date.year*10000+date.month*100+date.day
 
     # 计算分钟
-    def GetMinutePeriodData(self, period) :
+    def GetMinutePeriodData(self, period):
         result = []
         periodDataCount = 5
         if period == 5 :
@@ -417,59 +416,56 @@ class ChartData:
             periodDataCount = 60
         else :
             return self.Data
-        
+
         bFirstPeriodData = False
         newData = None
         dataCount=len(self.Data)
         i=-1
-        while i<dataCount :    # for (var i = 0; i < this.Data.length; )
+        while i<dataCount:# for (var i = 0; i < this.Data.length; )
             bFirstPeriodData = True
 
             # for (var j = 0; j < periodDataCount && i < this.Data.length; ++i)
-            j=0 
-            while j<periodDataCount and i<dataCount :
+            j=0
+            while j<periodDataCount and i<dataCount:
                 i+=1
                 if i>=dataCount :
                     break
-            
+
                 if bFirstPeriodData :
                     newData = HistoryData()
                     result.append(newData)
                     bFirstPeriodData = False
 
                 minData = self.Data[i]
-                if minData == None :
+                if minData is None:
                     j+=1
                     continue
 
-                if minData.Time in(925 ,930 ,1300) :
-                    pass
-                else :
+                if minData.Time not in (925, 930, 1300):
                     j+=1
 
                 newData.Date = minData.Date
                 newData.Time = minData.Time
-                if minData.Open==None or minData.Close==None :
+                if minData.Open is None or minData.Close is None:
                     continue
-                if newData.Open==None or newData.Close==None :
+                if newData.Open is None or newData.Close is None:
                     newData.Open=minData.Open
                     newData.High=minData.High
                     newData.Low=minData.Low
                     newData.YClose=minData.YClose
-                    newData.Close=minData.Close
                     newData.Vol=minData.Vol
-                    newData.Amount=minData.Amount    
-                    newData.FlowCapital=minData.FlowCapital 
-                else :
+                    newData.Amount=minData.Amount
+                    newData.FlowCapital=minData.FlowCapital
+                else:
                     if newData.High<minData.High :
                         newData.High=minData.High
                     if newData.Low>minData.Low :
                         newData.Low=minData.Low
-                    newData.Close=minData.Close
                     newData.Vol+=minData.Vol
                     newData.Amount+=minData.Amount
                     newData.FlowCapital+=minData.FlowCapital  
 
+                newData.Close=minData.Close
         return result
 
 
@@ -570,18 +566,21 @@ class ChartData:
 
 
     # 把财报数据拟合到主图数据,返回 SingleData 数组
-    def GetFittingFinanceData(self,financeData) :
+    def GetFittingFinanceData(self,financeData):
         dataLen=len(self.Data)
         financeLen=len(financeData)
         result=JSComplierHelper.CreateArray(dataLen)
 
         i,j = 0,0
-        while i<dataLen :
+        while i<dataLen:
             date=self.Data[i].Date
-            if j+1<financeLen :
-                if financeData[j].Date<date and financeData[j+1].Date<=date :
-                    j+=1
-                    continue
+            if (
+                j + 1 < financeLen
+                and financeData[j].Date < date
+                and financeData[j + 1].Date <= date
+            ):
+                j+=1
+                continue
 
             item=SingleData()
             item.Date=date
@@ -591,29 +590,32 @@ class ChartData:
             else :
                 item.Value=None
                 item.TestData=None
-            
+
             result[i]=item
 
             i+=1
-              
+
         return result
 
 
     # 市值计算 financeData.Value 是股数
-    def GetFittingMarketValueData(self,financeData) :
+    def GetFittingMarketValueData(self,financeData):
         dataLen=len(self.Data)
         financeLen=len(financeData)
         result=JSComplierHelper.CreateArray(dataLen)
 
         i,j =0,0
-        while i<dataLen :
+        while i<dataLen:
             date=self.Data[i].Date
             price=self.Data[i].Close
 
-            if j+1<financeLen :
-                if financeData[j].Date<date and financeData[j+1].Date<=date :
-                    j+=1
-                    continue
+            if (
+                j + 1 < financeLen
+                and financeData[j].Date < date
+                and financeData[j + 1].Date <= date
+            ):
+                j+=1
+                continue
 
             item=SingleData()
             item.Date=date
@@ -637,14 +639,14 @@ class ChartData:
         return result
 
     # SingleData 周期合并 日线
-    def GetPeriodSingleData(self,period) :
+    def GetPeriodSingleData(self,period):
         result=[]
         startDate ,newData =0,None
-        
-        for i in range (len(self.Data)) :
+
+        for i in range (len(self.Data)):
             isNewData=False
             dayData=self.Data[i]
-            if dayData==None or dayData.Date==None :
+            if dayData is None or dayData.Date is None:
                 continue
 
             if period==1 :   # 周线
@@ -652,42 +654,42 @@ class ChartData:
                 if fridayDate!=startDate :
                     isNewData=True
                     startDate=fridayDate
-                    
+
             elif period==2 :# 月线
                 if int(dayData.Date/100)!=int(startDate/100) :
                     isNewData=True
                     startDate=dayData.Date
-               
+
             elif period==3: # 年线
                 if int(dayData.Date/10000)!=int(startDate/10000) :
                     isNewData=True
                     startDate=dayData.Date
-                   
 
-            if (isNewData) :
+
+            if (isNewData):
                 newData=SingleData()
                 newData.Date=dayData.Date
                 newData.Value=dayData.Value
                 result.append(newData)
-            else :
-                if newData==None :
+            else:
+                if newData is None:
                     continue
-                if dayData.Value==None :
+                if dayData.Value is None:
                     continue
-                if newData.Value==None :
+                if newData.Value is None:
                     newData.Value=dayData.Value
 
         return result
 
     # 计算股息率 股息率TTM：过去4个季度现金分红总额/总市值 * 100%
-    def CalculateDividendYield(self,cashData, marketValue) :
+    def CalculateDividendYield(self,cashData, marketValue):
         if not marketValue :
             return []
 
         dataLen, cashLen = len(self.Data), len(cashData)
         dividendYield=[]
         j=0
-        for i in range(dataLen) :
+        for i in range(dataLen):
             day=self.Data.Data[i]
             market=marketValue.MarketValue[i]
             if not day or not market :
@@ -697,18 +699,19 @@ class ChartData:
             item.Date=day.Date
             item.Value=0
 
-            if (j+1<cashLen) :
-                if (cashData[j].Date<day.Date and cashData[j+1].Date<=day.Date) :
-                    j+=1
-                    i-=1
-                   
+            if (j + 1 < cashLen) and (
+                cashData[j].Date < day.Date and cashData[j + 1].Date <= day.Date
+            ):
+                j+=1
+                i-=1
+
             if (j<cashLen) :
                 cash=cashData[j]
                 endDate=cash.Date+10000    # 1年有效
 
                 if (day.Date>=cash.Date and day.Date<=endDate and JSComplierHelper.IsDivideNumber(market.Value) and JSComplierHelper.IsNumber(cash.Value)) :
                     item.Value=cash.Value/market.Value*100
-           
+
             dividendYield.append(item)
 
         return dividendYield

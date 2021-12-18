@@ -20,17 +20,18 @@ from umychart_complier_job import JS_EXECUTE_JOB_ID, JobItem
 from umychart_complier_help import Variant
 
 
-TOKEN_NAME={ }
-TOKEN_NAME[1] = 'Boolean'           # BooleanLiteral
-TOKEN_NAME[2] = '<end>'             # EOF
-TOKEN_NAME[3] = 'Identifier'        # Identifier
-TOKEN_NAME[4] = 'Keyword'           # Keyword
-TOKEN_NAME[5] = 'Null'              # NullLiteral
-TOKEN_NAME[6] = 'Numeric'           # NumericLiteral
-TOKEN_NAME[7] = 'Punctuator'        # Punctuator
-TOKEN_NAME[8] = 'String'            # StringLiteral
-TOKEN_NAME[9] = 'RegularExpression' #RegularExpression
-TOKEN_NAME[10] = 'Template'         #Template
+TOKEN_NAME = {
+    1: 'Boolean',
+    2: '<end>',
+    3: 'Identifier',
+    4: 'Keyword',
+    5: 'Null',
+    6: 'Numeric',
+    7: 'Punctuator',
+    8: 'String',
+    9: 'RegularExpression',
+    10: 'Template',
+}
 
 class BufferEntry():
     def __init__(self, type, value, regex=None, range=None, loc=None):
@@ -251,7 +252,7 @@ class Node:
             self.NeedFinanceData.append(item)
 
 
-    def VerifySymbolFunction(self, callee,args) :
+    def VerifySymbolFunction(self, callee,args):
         if callee.Name=='DYNAINFO' :
             self.IsNeedLatestData=True
             return
@@ -286,7 +287,7 @@ class Node:
             self.IsNeedIndexData = True
             return
 
-        if callee.Name == 'UPCOUNT' or callee.Name == 'DOWNCOUNT' :   # 上涨下跌个数
+        if callee.Name in ['UPCOUNT', 'DOWNCOUNT']:   # 上涨下跌个数
             blockSymbol = args[0].Value
             if blockSymbol not in self.IsNeedBlockIncreaseData:
                 self.IsNeedBlockIncreaseData.add(blockSymbol)
@@ -489,39 +490,30 @@ class JSParser:
         return body
 
     # https://tc39.github.io/ecma262/#sec-block
-    def ParseStatementListItem(self) :
-        statement=None
+    def ParseStatementListItem(self):
         self.Context.IsAssignmentTarget=True
         self.Context.IsBindingElement=True
-        if self.LookAhead.Type==4 : # 4=/*Keyword*/
-            pass
-        else :
-            statement=self.ParseStatement()
-
-        return statement
+        return self.ParseStatement() if self.LookAhead.Type != 4 else None
 
     # https://tc39.github.io/ecma262/#sec-ecmascript-language-statements-and-declarations
     def ParseStatement(self):
         statement=None
         type = self.LookAhead.Type
-        if type in (1,5,6,8,10,9) : # BooleanLiteral, NullLiteral, NumericLiteral, StringLiteral, Template, RegularExpression
+        if type in (1,5,6,8,10,9): # BooleanLiteral, NullLiteral, NumericLiteral, StringLiteral, Template, RegularExpression
             statement = self.ParseExpressionStatement()
 
-        elif  type==7 :     # 7=/* Punctuator */:
+        elif type==7: # 7=/* Punctuator */:
             value = self.LookAhead.Value
-            if value == '(' :
+            if value == '(' or value != ';':
                 statement = self.ParseExpressionStatement()
-            elif value == ';' :
+            else:
                 statement = self.ParseEmptyStatement()
-            else :
-                statement = self.ParseExpressionStatement()
-
         elif type==3 : # 3=/* Identifier */:  
             statement = self.ParseLabelledStatement()
-           
+
         elif type==4: # 4= /* Keyword */
             print('[JSParser::ParseStatementListItem] not support Keyword')
-        else :
+        else:
             statement="error"
 
         return statement
@@ -544,12 +536,11 @@ class JSParser:
         return self.Finalize(node, statement)
 
     #  https://tc39.github.io/ecma262/#sec-comma-operator
-    def ParseExpression(self) :
+    def ParseExpression(self):
         startToken=self.LookAhead
         expr=self.IsolateCoverGrammar(self.ParseAssignmentExpression)
-        if self.Match(',') :
-            expressions=[]
-            expressions.append(expr)
+        if self.Match(','):
+            expressions = [expr]
             while self.LookAhead.Type!=2 : #/*EOF*/
                 if not self.Match(',') :
                     break
@@ -585,11 +576,9 @@ class JSParser:
 
         return expr
 
-    def ParseConditionalExpression(self) :
+    def ParseConditionalExpression(self):
         startToken=self.LookAhead
-        expr=self.InheritCoverGrammar(self.ParseBinaryExpression)
-
-        return expr
+        return self.InheritCoverGrammar(self.ParseBinaryExpression)
 
     def ParseBinaryExpression(self) :
         startToken=self.LookAhead
@@ -639,11 +628,9 @@ class JSParser:
 
         return expr
     
-    def ParseExponentiationExpression(self) :
+    def ParseExponentiationExpression(self):
         startToken=self.LookAhead
-        expr=self.InheritCoverGrammar(self.ParseUnaryExpression)
-
-        return expr
+        return self.InheritCoverGrammar(self.ParseUnaryExpression)
 
     def ParseUnaryExpression(self) :
         expr=None
@@ -660,11 +647,9 @@ class JSParser:
         return expr
 
     # https://tc39.github.io/ecma262/#sec-update-expressions
-    def ParseUpdateExpression(self) :
+    def ParseUpdateExpression(self):
         startToken=self.LookAhead
-        expr=self.InheritCoverGrammar(self.ParseLeftHandSideExpressionAllowCall)
-
-        return expr
+        return self.InheritCoverGrammar(self.ParseLeftHandSideExpressionAllowCall)
 
     def ParseLeftHandSideExpressionAllowCall(self) :
         startToken=self.LookAhead
@@ -775,27 +760,19 @@ class JSParser:
             self.LastMarker.Line=self.StartMarker.Line
             self.LastMarker.Column=self.StartMarker.Column
 
-    def ReinterpretExpressionAsPattern(self, expr) :
-        if expr.Type in (Syntax.Identifier, Syntax.AssignmentExpression) :
-            pass
-        else :
-            pass
+    def ReinterpretExpressionAsPattern(self, expr):
+        pass
 
     def Finalize(self,marker,node) :
         node.Marker=Marker( line=marker.Line, column=marker.Column, index=marker.Index )
         return node
 
-    def BinaryPrecedence(self, token) :
+    def BinaryPrecedence(self, token):
         op = token.Value
 
-        if token.Type == 7 :    # /* Punctuator */
-            precedence = self.OperatorPrecedence.get(op, 0)
-        else :
-            precedence = 0
-        
-        return precedence
+        return self.OperatorPrecedence.get(op, 0) if token.Type == 7 else 0
 
-    def IsolateCoverGrammar(self, parseFunction) :
+    def IsolateCoverGrammar(self, parseFunction):
         previousIsBindingElement=self.Context.IsBindingElement
         previousIsAssignmentTarget=self.Context.IsAssignmentTarget
         previousFirstCoverInitializedNameError=self.Context.FirstCoverInitializedNameError
@@ -804,10 +781,6 @@ class JSParser:
         self.Context.IsAssignmentTarget=True
         self.Context.FirstCoverInitializedNameError=None
         result=parseFunction()
-
-        if self.Context.FirstCoverInitializedNameError is not None :
-            # 错误 this.throwUnexpectedToken(this.context.firstCoverInitializedNameError);
-            pass
 
         self.Context.IsBindingElement=previousIsBindingElement
         self.Context.IsAssignmentTarget=previousIsAssignmentTarget
@@ -834,31 +807,21 @@ class JSParser:
     def ThrowUnexpectedToken(self, token=None,message=None) :
         raise self.UnexpectedTokenError(token,message)
 
-    def ThrowUnexpectedError(self, index,line,column,message=None) :
-        if message is not None : 
-            msg=message
-        else :
-            msg="执行异常"
-
+    def ThrowUnexpectedError(self, index,line,column,message=None):
+        msg = message if message is not None else "执行异常"
         return self.ErrorHandler.ThrowError(index,line,column,msg)
 
-    def UnexpectedTokenError(self,token=None,message=None) :
+    def UnexpectedTokenError(self,token=None,message=None):
         msg=message or Messages.UnexpectedToken
-        value='ILLEGAL'
-        if token :
-            if not message :
-                pass
-            value=token.Value
-
+        value = token.Value if token else 'ILLEGAL'
         msg=msg.replace("%0",unicode(value),1)
-        if token and isinstance(token.LineNumber, int) :
+        if token and isinstance(token.LineNumber, int):
             index=token.Start
             line=token.LineNumber
             lastMarkerLineStart=self.LastMarker.Index-self.LastMarker.Column
             column=token.Start-lastMarkerLineStart+1
-            return self.ErrorHandler.CreateError(index,line,column,msg)
-        else :
+        else:
             index=self.LastMarker.Index
             line=self.LastMarker.Line
             column=self.LastMarker.Column+1
-            return self.ErrorHandler.CreateError(index,line,column,msg)
+        return self.ErrorHandler.CreateError(index,line,column,msg)
