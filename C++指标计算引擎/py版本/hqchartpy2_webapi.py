@@ -52,7 +52,7 @@ def HQChartPy_Run():
     right=0
     jobID=str(uuid.uuid1())
 
-    if (request.method=="POST") :
+    if (request.method=="POST"):
         # data = request.get_data()
         if (request.mimetype=="application/x-www-form-urlencoded") :
             requestData=request.form
@@ -61,15 +61,12 @@ def HQChartPy_Run():
 
         symbol=requestData['Symbol']
         script=requestData["Script"]
-        args=[]
-
         # 可选参数
         if ("Period" in requestData):
             period=requestData["Period"]
         if ("Right" in requestData) :
             right=requestData["Right"]
-        if ("Args" in requestData) :
-            args=requestData["Args"]
+        args = requestData["Args"] if ("Args" in requestData) else []
         if ("StartDate" in requestData) :
             startDate=requestData["StartDate"]
         if ("EndDate" in requestData) :
@@ -92,7 +89,7 @@ def HQChartPy_Run():
             "JobID":jobID
         }
 
-    else :
+    else:
         runConfig={
             # 系统指标名字
             # "Name":"MA",
@@ -114,7 +111,7 @@ def HQChartPy_Run():
     start = time.process_time()
 
     res=FastHQChart.Run(jsConfig,hqData,proSuccess=result.RunSuccess, procFailed=result.RunFailed)
-    
+
     elapsed = (time.process_time() - start)
     log='''
 ---------------------------------------------------------------------------
@@ -137,10 +134,10 @@ ID:{3}
         responseData['StartDate']=startDate
         responseData["EndDate"]=endDate
         responseData["JobID"]=jobID
-        return jsonify(responseData)
     else:
         responseData={'Code':1, "Tick":elapsed, "Error": result.Error, "JobID": jobID }
-        return jsonify(responseData)
+
+    return jsonify(responseData)
 
 
 if __name__ == '__main__':

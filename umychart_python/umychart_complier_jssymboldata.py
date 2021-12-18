@@ -58,14 +58,13 @@ class FinanceData :
         self.Finance=finance    # 数据  (可以是一个数组)
         self.Announcement=announcement
 
-    def Get(self, name) :
+    def Get(self, name):
         if not self.Finance :
             return None
         if not JSComplierHelper.IsJsonNumber(self.Finance,name) :
             return None
 
-        value=self.Finance[name]
-        return value
+        return self.Finance[name]
 
 # http://www.newone.com.cn/helpcontroller/index?code=zszy_pc
 class DYNAINFO_ARGUMENT_ID :
@@ -162,10 +161,10 @@ class JSSymbolData() :
 
 
     # 下载股票数据
-    def GetSymbolData(self) :
+    def GetSymbolData(self):
         if self.Data:
             return
-        
+
         if self.DataType==HQ_DATA_TYPE.MINUTE_ID:  # 当天分钟数据
             url=self.RealtimeApiUrl
             postData={
@@ -182,7 +181,7 @@ class JSSymbolData() :
             self.Name=jsonData['stock'][0]['name']
             return
 
-        if self.Period<=3 : # 请求日线数据
+        if self.Period<=3: # 请求日线数据
             url=self.KLineApiUrl
             postData={
                     "field": [ "name", "symbol","yclose","open","price","high","low","vol",'up','down','stop','unchanged'],
@@ -205,10 +204,7 @@ class JSSymbolData() :
                 self.Data.Data=periodData
 
             self.Data.Right=self.Right
-            self.Data.Period=self.Period
-            self.Name=jsonData['name']
-            
-        else :
+        else:
             url=self.MinuteKLineApiUrl
             postData= {
                 "field": ["name","symbol","yclose","open","price","high","low","vol"],
@@ -227,8 +223,9 @@ class JSSymbolData() :
                 periodData=self.Data.GetPeriodData(self.Period)
                 self.Data.Data=periodData
 
-            self.Data.Period=self.Period
-            self.Name=jsonData['name']
+
+        self.Data.Period=self.Period
+        self.Name=jsonData['name']
 
     @staticmethod # 日线数据转类
     def JsonDataToHistoryData(data) :
@@ -299,23 +296,23 @@ class JSSymbolData() :
             kData.Low = item[low]
             kData.Vol = item[vol]    # 原始单位股
             kData.Amount = item[amount]
-            
+
             aryDayData.append(kData)
 
         # 无效数据处理
-        for i, minData in enumerate(aryDayData) :
+        for i, minData in enumerate(aryDayData):
             if not minData.IsVaild(5):
-                if i == 0 :
+                if i == 0:
                     if minData.YClose > 0:
                         minData.Open = minData.YClose
                         minData.High = minData.YClose
                         minData.Low = minData.YClose
                         minData.Close = minData.YClose
-                else : # 用前一个有效数据填充
-                    for j in range(i-1,-1,-1) :
+                else:
+                    for j in range(i-1,-1,-1):
                         minData2 = aryDayData[j]
-                        if minData2.IsVaild(4) :
-                            if minData.YClose<=0 or minData.YClose==None:
+                        if minData2.IsVaild(4):
+                            if minData.YClose <= 0 or minData.YClose is None:
                                 minData.YClose = minData2.Close
                             minData.Open = minData2.Open
                             minData.High = minData2.High
@@ -373,7 +370,7 @@ class JSSymbolData() :
 
 
     # 获取大盘指数数据
-    def GetIndexData(self) :
+    def GetIndexData(self):
         if self.IndexData :
             return
 
@@ -392,7 +389,7 @@ class JSSymbolData() :
             self.IndexData=ChartData(data=data,dataType=self.DataType)
             return
 
-        if self.Period<=3 : # 请求日线数据
+        if self.Period<=3: # 请求日线数据
             url=self.KLineApiUrl
             postData={
                     "field": [ "name", "symbol","yclose","open","price","high","low","vol",'up','down','stop','unchanged'],
@@ -412,9 +409,8 @@ class JSSymbolData() :
             if self.Period>0 and self.Period<=3 :   # 周期数据
                 periodData=self.IndexData.GetPeriodData(self.Period)
                 self.IndexData.Data=periodData
-            
-            self.IndexData.Period=self.Period
-        else :
+
+        else:
             url=self.MinuteKLineApiUrl
             postData= {
                 "field": ["name","symbol","yclose","open","price","high","low","vol"],
@@ -435,7 +431,8 @@ class JSSymbolData() :
                 periodData=self.IndexData.GetPeriodData(self.Period)
                 self.IndexData.Data=periodData
 
-            self.IndexData.Period=self.Period
+
+        self.IndexData.Period=self.Period
 
     # 获取大盘指数缓存数据
     def GetIndexCacheData(self, dataName) :
@@ -538,12 +535,12 @@ class JSSymbolData() :
         return financeData
     
     # 获取某一个财务数据 (返回 True/False 返回数据保存在 resData)
-    def GetFinanceValue(self,jsData, name, resData) :
+    def GetFinanceValue(self,jsData, name, resData):
         financeData=JSSymbolData.JsonDataToFinance(jsData)
         if not financeData :
             return False
         value=financeData.Get(name)
-        if value==None :
+        if value is None:
             return False
         resData.Value=value
         return True
@@ -809,7 +806,7 @@ class JSSymbolData() :
         return True
 
 
-    def RecvMarginData(self, jsonData,jobID) :
+    def RecvMarginData(self, jsonData,jobID):
         if not JSComplierHelper.IsJsonExist(jsonData,'stock') :
             return
 
@@ -833,13 +830,13 @@ class JSSymbolData() :
                     continue
                 indexData.Value=marginData['balance'] # 融资融券余额
                 aryData.append(indexData)
-                    
+
             elif jobID==JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_RATE:
                 if not JSComplierHelper.IsNumber(marginData.rate):
                     continue
                 indexData.Value=marginData['rate']    # 融资占比
                 aryData.append(indexData)
-                
+
             elif jobID in ( JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_BUY_BALANCE,       # 买入信息-融资余额
                             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_BUY_AMOUNT,        # 买入信息-买入额
                             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_BUY_REPAY,         # 买入信息-偿还额
@@ -870,7 +867,7 @@ class JSSymbolData() :
                     aryData2.append(indexData2)
                     aryData3.append(indexData3)
                     aryData4.append(indexData4)
-                    
+
             elif jobID in ( JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_SELL_BALANCE,      # 卖出信息-融券余量
                             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_SELL_VOLUME,       # 卖出信息-卖出量
                             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_SELL_REPAY,        # 卖出信息-偿还量
@@ -904,7 +901,10 @@ class JSSymbolData() :
                 continue
 
         allData=[]
-        if (jobID==JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_BALANCE or jobID==JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_RATE) :
+        if jobID in [
+            JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_BALANCE,
+            JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_MARGIN_RATE,
+        ]:
             item=Variant()
             item.JobID, item.Data = jobID, aryData
             allData.append(item)
@@ -961,7 +961,7 @@ class JSSymbolData() :
         return []
 
     # 分钟涨幅股票个数统计数据下载
-    def GetIndexIncreaseData(self,job) :
+    def GetIndexIncreaseData(self,job):
         upKey=str(job.ID)+'-UpCount-'+job.Symbol
         downKey=str(job.ID)+'-DownCount-'+job.Symbol
         if upKey in self.ExtendData and downKey in self.ExtendData:
@@ -969,7 +969,10 @@ class JSSymbolData() :
 
         symbol=job.Symbol
         symbol=symbol.replace('.CI','.ci')
-        if (self.DataType==HQ_DATA_TYPE.MINUTE_ID or self.DataType==HQ_DATA_TYPE.MULTIDAY_MINUTE_ID) :  # 走势图数据
+        if self.DataType in [
+            HQ_DATA_TYPE.MINUTE_ID,
+            HQ_DATA_TYPE.MULTIDAY_MINUTE_ID,
+        ]:  # 走势图数据
             url=g_JSComplierResource.CacheDomain+'/cache/analyze/increaseanalyze/'+symbol+'.json'
             print('[JSSymbolData::GetIndexIncreaseData] minute Get url= ' , url)
             # 请求数据
@@ -1060,7 +1063,7 @@ class JSSymbolData() :
         return self.ExtendData[key]
 
     # 下载新闻统计
-    def GetNewsAnalysisData(self,jobID) :
+    def GetNewsAnalysisData(self,jobID):
         if  jobID in self.NewsAnalysisData :
             return
 
@@ -1076,7 +1079,7 @@ class JSSymbolData() :
             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_TOPMANAGERS:  'topmanagers',       # NEWS(9)   高管要闻
             JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_PLEDGE:       'Pledge',            # NEWS(10)  股权质押
         }
-            
+
 
         if jobID not in mapFolder :
             return
@@ -1111,8 +1114,11 @@ class JSSymbolData() :
             return
 
         # console.log('[JSSymbolData::RecvNewsAnalysisData] jobID',jobID, data.update);
-        if (jobID==JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_HOLDERCHANGE or jobID==JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_HOLDERCHANGE2) :
-            
+        if jobID in [
+            JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_HOLDERCHANGE,
+            JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_HOLDERCHANGE2,
+        ]:
+
             aryData, aryData2 = [],[]
             analyzeData2=jsonData['data2'] # 第2组数据
             for i in range(dataLen) :
@@ -1137,7 +1143,7 @@ class JSSymbolData() :
             bindData=ChartData(data=aryFixedData)
             self.NewsAnalysisData[JS_EXECUTE_JOB_ID.JOB_DOWNLOAD_NEWS_ANALYSIS_HOLDERCHANGE2]=bindData.GetValue()
 
-        else :
+        else:
             aryData=[]
             for i in range(dataLen) :
                 item=SingleData()
@@ -1182,38 +1188,34 @@ class JSSymbolData() :
             return 0
         return 0
 
-    def DATE(self) :
-        result=[]
-        if not self.Data :
-            return result
+    def DATE(self):
+        if not self.Data:
+            return []
         return self.Data.GetDate()
 
-    def YEAR(self) :
-        result=[]
-        if not self.Data :
-            return result
+    def YEAR(self):
+        if not self.Data:
+            return []
         return self.Data.GetYear()
 
-    def MONTH(self) :
-        result=[]
-        if not self.Data :
-            return result
+    def MONTH(self):
+        if not self.Data:
+            return []
         return self.Data.GetMonth()
 
-    def WEEK(self) :
-        result=[]
-        if not self.Data :
-            return result
+    def WEEK(self):
+        if not self.Data:
+            return []
         return self.Data.GetWeek()
 
-    def REFDATE(self,data,date) :
+    def REFDATE(self,data,date):
         index=None
         for i in range(len(self.Data.Data)) :   # 查找日期对应的索引
             if self.Data.Data[i].Date==date :
                 index=i
                 break
 
-        if index==None or index>=len(data) :
+        if index is None or index >= len(data):
             return None
 
         return data[index]
@@ -1231,8 +1233,4 @@ class JSSymbolData() :
         if (lCount<=0):
             return []
 
-        result=[]
-        for i in range(lCount-1, -1, -1):
-            result.append(i+1) #数据从1开始
-
-        return result
+        return [i+1 for i in range(lCount-1, -1, -1)]

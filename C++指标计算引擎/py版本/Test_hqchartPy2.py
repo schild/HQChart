@@ -20,11 +20,12 @@ class HQChartData(IHQData) :
         dataCount=len(kData['data'])
         name=kData['name']
 
-        cacheData={}
-        cacheData['count']=dataCount    # 数据个数
-        cacheData['name']=name          # 股票名称
-        cacheData['period']=PERIOD_ID.DAY_ID # 日K
-        cacheData['right']=0    # 不复权
+        cacheData = {
+            'count': dataCount,
+            'name': name,
+            'period': PERIOD_ID.DAY_ID,
+            'right': 0,
+        }
 
         aryDate=[]
         aryClose=[]
@@ -34,7 +35,7 @@ class HQChartData(IHQData) :
         aryLow=[]
         aryVol=[]
         aryAmount=[]
-        
+
         for i in range(dataCount) :
             item=kData['data'][i]
             aryDate.append(item[0])
@@ -65,63 +66,32 @@ class HQChartData(IHQData) :
         self.Cache[symbol]=cacheData
         return cacheData
 
-    def GetFinance(self,symbol, id, period,right,kcount,jobID) :
+    def GetFinance(self,symbol, id, period,right,kcount,jobID):
 
-        if (id==7) :
+        if (id==7):
             pyCacheData=[18653471415, 18653471415,21618279922,21618279922,28103763899, 28103763899,28103763899,28103763899]  # 数据
             pyCacheDate=[20170519, 20170830,20170906, 20180428,20180830, 20190326,20190824,20200425]  # 日期
-            data={"type": 2, "date":pyCacheDate, "data":pyCacheData}
-            return data
-        else :
-            pyCacheData=[]
-            for i in range(kcount) :    # 生成财务数据
-                pyCacheData.append(8976549.994+i)
-
-            data={"type": 1, "data":pyCacheData}
-            return data
+            return {"type": 2, "date":pyCacheDate, "data":pyCacheData}
+        else:
+            pyCacheData = [8976549.994+i for i in range(kcount)]
+            return {"type": 1, "data":pyCacheData}
 
     def GetDynainfo(self,symbol, id,period,right, kcount,jobID):
-        data={"type": 0, "data":5}
-        return data
+        return {"type": 0, "data":5}
 
     def GetCapital(self,symbol,period,right, kcount,jobID):
-        data={"type": 0, "data":455555555.99}
-        return data
+        return {"type": 0, "data":455555555.99}
 
     # 历史所有的流通股 
     def GetHisCapital(self,symbol, period, right, kcount,jobID):
-        pyCacheData=[]
-        for i in range(kcount) :    # 生成流通股数据
-            pyCacheData.append(8976549.994+i)
-
-        data={"type": 1, "data":pyCacheData}
-        return data
+        pyCacheData = [8976549.994+i for i in range(kcount)]
+        return {"type": 1, "data":pyCacheData}
 
     # 大盘数据
     def GetIndex(self, symbol, varName, period,right, kcount,jobID):
-        if (varName==u'INDEXA') :   # 大盘成交额
-            pass
-        elif (varName==u'INDEXC') : # 大盘收盘价
-            pass
-        elif (varName==u'INDEXH') : # 大盘最高价
-            pass
-        elif (varName==u'INDEXL') : # 大盘最低价
-            pass
-        elif (varName==u'INDEXO') : # 大盘开盘价
-            pass
-        elif (varName==u'INDEXV') : # 大盘成交量
-            pass
-        elif (varName==u'INDEXADV') : # 上涨家数
-            pass
-        elif (varName==u'INDEXDEC') : # 下跌家数
-            pass
-
         # 测试数据
-        pyCacheData=[]
-        for i in range(kcount) :
-            pyCacheData.append(2888.8+i)
-        data={"type": 1, "data":pyCacheData}
-        return data
+        pyCacheData = [2888.8+i for i in range(kcount)]
+        return {"type": 1, "data":pyCacheData}
 
 class HQResultTest():
     def __init__(self):

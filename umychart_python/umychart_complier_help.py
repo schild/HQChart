@@ -30,10 +30,8 @@ class JSComplierHelper:
         return JSComplierHelper.IsNumber(jsData[name])
 
     @staticmethod   # 是否存在字段
-    def IsJsonExist(jsData,name) :
-        if name in jsData.keys() :
-            return True
-        return False
+    def IsJsonExist(jsData,name):
+        return name in jsData.keys()
 
 
     @staticmethod
@@ -80,7 +78,7 @@ class JSComplierHelper:
             return [value]*count
 
     @staticmethod # 计算2个点之间线段
-    def CalculateDrawLine(lineCache) :
+    def CalculateDrawLine(lineCache):
         lineCache.List=[]
         for i in range(lineCache.Start.ID, lineCache.End.ID+1) :
             lineCache.List.append(i)
@@ -93,19 +91,14 @@ class JSComplierHelper:
         item.ID, item.Value = lineCache.Start.ID, lineCache.Start.Value
         result.append(item)  # 第1个点
 
-        if (lineCache.Start.Value>lineCache.End.Value) :
-            for i in range(1, len(lineCache.List)-1) :
+        for i in range(1, len(lineCache.List)-1):
+            if (lineCache.Start.Value>lineCache.End.Value):
                 value=height*(len(lineCache.List)-1-i)/width+lineCache.End.Value
-                item=Variant()
-                item.ID, item.Value = lineCache.List[i], value
-                result.append(item)
-        else :
-            for i in range(1, len(lineCache.List)-1) :
+            else:
                 value=height*i/width+lineCache.Start.Value
-                item=Variant()
-                item.ID, item.Value = lineCache.List[i], value
-                result.append(item)
-
+            item=Variant()
+            item.ID, item.Value = lineCache.List[i], value
+            result.append(item)
         item=Variant()
         item.ID, item.Value = lineCache.End.ID, lineCache.End.Value
         result.append(item)      # 最后一个点

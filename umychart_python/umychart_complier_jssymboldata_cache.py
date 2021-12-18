@@ -138,8 +138,8 @@ class SymbolDataCache(JSSymbolData):
         pass
 
     # 最新行情
-    def GetLatestCacheData(self, dataName) :
-        if (not dataName in self.LatestKCache.keys()) :
+    def GetLatestCacheData(self, dataName):
+        if dataName not in self.LatestKCache.keys():
             print("[SymbolDataCache::GetLatestCacheData] can't find {0} in LatestKCache",dataName )
             return None
 

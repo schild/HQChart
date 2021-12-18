@@ -86,10 +86,9 @@ class JSExecute :
              self.Arguments=option.Arguments
         
           
-    def Execute(self) :
+    def Execute(self):
         self.SymbolData.RunDownloadJob(self.JobList) # 准备数据
-        outVar=self.RunAST()
-        return outVar
+        return self.RunAST()
 
     def ReadSymbolData(self,name,node) :
         if name in ('CLOSE','C','VOL','V','OPEN','O','HIGH','H','LOW','L','AMOUNT') :
@@ -136,23 +135,22 @@ class JSExecute :
         return None
 
     # 单数据转成数组 个数和历史数据一致
-    def SingleDataToArrayData(self,value) :
+    def SingleDataToArrayData(self,value):
         count=self.SymbolData.Data.GetCount()
-        result=[value]*count
-        return result
+        return [value]*count
 
-    def RunAST(self) :
+    def RunAST(self):
         # 预定义的变量
         for item in self.Arguments :
             self.VarTable[item.Name]=item.Value
-        
+
         if not self.AST or not self.AST.Body :
             self.ThrowError()
 
-        for item in self.AST.Body :
+        for item in self.AST.Body:
             self.VisitNode(item)
-            if item.Type==Syntax.ExpressionStatement and item.Expression :
-                if item.Expression.Type==Syntax.AssignmentExpression and item.Expression.Operator==':' and item.Expression.Left :
+            if item.Type==Syntax.ExpressionStatement and item.Expression:
+                if item.Expression.Type==Syntax.AssignmentExpression and item.Expression.Operator==':' and item.Expression.Left:
                     assignmentItem=item.Expression
                     varName=assignmentItem.Left.Name
                     outVar=self.VarTable[varName]
@@ -168,7 +166,7 @@ class JSExecute :
                         draw.Name=callItem.Callee.Name
                         self.OutVarTable.append(OutVariable(name=draw.Name, draw=draw, type=1))
 
-                elif (item.Expression.Type==Syntax.SequenceExpression) :
+                elif item.Expression.Type==Syntax.SequenceExpression:
                     varName=None
                     draw=None
                     color=None
@@ -188,7 +186,7 @@ class JSExecute :
                             if not JSComplierHelper.IsArray(varValue) :
                                 varValue=self.SingleDataToArrayData(varValue) 
                                 self.VarTable[varName]=varValue            # 把单数值转化成数组放到变量表里
-                        
+
                         elif (itemExpression.Type==Syntax.Identifier) :
                             value=itemExpression.Name
                             if (value=='COLORSTICK') :
@@ -221,7 +219,7 @@ class JSExecute :
                             draw=itemExpression.Draw
                             draw.Name=itemExpression.Callee.Name
 
-                    if (pointDot and varName) :  # 圆点
+                    if (pointDot and varName):  # 圆点
                         outVar=self.VarTable[varName]
                         if (not JSComplierHelper.IsArray(outVar)) :
                             outVar=self.SingleDataToArrayData(outVar)
@@ -253,7 +251,7 @@ class JSExecute :
                         if lineWidth:
                             value.LineWidth=lineWidth
                         self.OutVarTable.append(value)
-                    
+
                     elif (stick and varName) : # STICK 画柱状线
                         outVar=self.VarTable[varName]
                         value=OutVariable(name=varName,data=outVar, type=5)
@@ -262,15 +260,15 @@ class JSExecute :
                         if lineWidth :
                             value.LineWidth=lineWidth
                         self.OutVarTable.append(value)
-                    
+
                     elif (volStick and varName) :  # VOLSTICK   画彩色柱状线
                         outVar=self.VarTable[varName]
                         value=OutVariable(name=varName,data=outVar, type=6)
                         if color :
                             value.Color=color
                         self.OutVarTable.append(value)
-                    
-                    elif (varName and color) :
+
+                    elif (varName and color):
                         outVar=self.VarTable[varName]
                         if not JSComplierHelper.IsArray(outVar) :
                             outVar=self.SingleDataToArrayData(outVar)
@@ -278,36 +276,36 @@ class JSExecute :
                         value.Color=color
                         if (lineWidth) :
                             value.LineWidth=lineWidth
-                        if (isShow == False) :
+                        if not isShow:
                             value.IsShow = False
-                        if (isExData==True) :
+                        if isExData:
                             value.IsExData = True
                         self.OutVarTable.append(value)
-                    
+
                     elif (draw and color) :
                         value=OutVariable(name=draw.Name,data=draw, type=1)
                         value.Color=color
                         self.OutVarTable.append(value)
-                    
+
                     elif (colorStick and varName) : # CYW: SUM(VAR4,10)/10000, COLORSTICK; 画上下柱子
                         outVar=self.VarTable[varName]
                         value=OutVariable(name=varName,data=outVar, type=2)
                         value.Color=color
                         self.OutVarTable.append(value)
-                    
-                    elif (varName) :
+
+                    elif varName:
                         outVar=self.VarTable[varName]
                         value=OutVariable(name=varName,data=outVar, type=0)
                         if color :
                             value.Color=color
                         if lineWidth :
                             value.LineWidth=lineWidth
-                        if isShow==False :
+                        if not isShow:
                             value.IsShow=False
-                        if isExData==True :
+                        if isExData:
                             value.IsExData = True
                         self.OutVarTable.append(value)
-                    
+
         return self.OutVarTable
 
 
@@ -328,15 +326,15 @@ class JSExecute :
             self.VisitNode(item)
 
     # 函数调用
-    def VisitCallExpression(self, node) :
+    def VisitCallExpression(self, node):
         funcName=node.Callee.Name
         args=[]
-        for item in node.Arguments :
-            if item.Type==Syntax.BinaryExpression or item.Type==Syntax.LogicalExpression :
+        for item in node.Arguments:
+            if item.Type in [Syntax.BinaryExpression, Syntax.LogicalExpression]:
                 value=self.VisitBinaryExpression(item)
             elif item.Type==Syntax.CallExpression :
                 value=self.VisitCallExpression(item)
-            else :
+            else:
                 value=self.GetNodeValue(item)
             args.append(value)
 
@@ -399,7 +397,7 @@ class JSExecute :
         return node.Out
 
     # 赋值
-    def VisitAssignmentExpression(self, node) :
+    def VisitAssignmentExpression(self, node):
         left=node.Left
         if left.Type!=Syntax.Identifier :
             self.ThrowUnexpectedNode(node)
@@ -408,7 +406,7 @@ class JSExecute :
         right=node.Right
         value=None
 
-        if right.Type==Syntax.BinaryExpression or right.Type==Syntax.LogicalExpression :
+        if right.Type in [Syntax.BinaryExpression, Syntax.LogicalExpression]:
             value=self.VisitBinaryExpression(right)
         elif right.Type==Syntax.CallExpression :
             value=self.VisitCallExpression(right)
@@ -427,12 +425,11 @@ class JSExecute :
         self.VarTable[varName]=value
 
     # 逻辑运算
-    def VisitBinaryExpression(self, node) :
-        stack=[]
-        stack.append(node)
+    def VisitBinaryExpression(self, node):
+        stack = [node]
         temp=None
 
-        while len(stack)!=0 :
+        while stack:
             temp=stack[-1]
             if isinstance(temp,(BinaryExpression,AssignmentExpression)) and temp.Left and node!=temp.Left and node!=temp.Right :
                 stack.append(temp.Left)
@@ -482,7 +479,7 @@ class JSExecute :
                         value.Out=self.Algorithm.Or(leftValue,rightValue)
 
                     # console.log('[JSExecute::VisitBinaryExpression] LogicalExpression',value);
-                
+
                 node=temp
 
         return node.Out

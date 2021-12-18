@@ -112,9 +112,9 @@ UNICODE_COMBINING_MARK = set(U_CATEGORIES['Mn'] + U_CATEGORIES['Mc'])
 IDENTIFIER_START = UNICODE_LETTER.union(UNICODE_OTHER_ID_START).union(set(('$', '_', '\\')))
 UNICODE_CONNECTOR_PUNCTUATION = set(U_CATEGORIES['Pc'])
 
-DECIMAL_CONV = dict((c, n) for n, c in enumerate('0123456789'))
-OCTAL_CONV = dict((c, n) for n, c in enumerate('01234567'))
-HEX_CONV = dict((c, n) for n, c in enumerate('0123456789abcdef'))
+DECIMAL_CONV = {c: n for n, c in enumerate('0123456789')}
+OCTAL_CONV = {c: n for n, c in enumerate('01234567')}
+HEX_CONV = {c: n for n, c in enumerate('0123456789abcdef')}
 for n, c in enumerate('ABCDEF', 10): 
     HEX_CONV[c] = n
 
@@ -178,7 +178,7 @@ class Error(Exception):
         return '%s: %s' % (self.__class__.__name__, self)
 
     def ToDict(self):
-        d = dict((unicode(k), v) for k, v in self.__dict__.items() if v is not None)
+        d = {unicode(k): v for k, v in self.__dict__.items() if v is not None}
         d['message'] = self.ToString()
         return d
 
@@ -312,7 +312,7 @@ class Scanner:
             type=4                       # Keyword
         elif id=='null':
             type=5                       # NullLiteral
-        elif id=='true' or id=='false':
+        elif id in ['true', 'false']:
             type=1                       # BooleanLiteral
         else:
             type=3                       # Identifier
@@ -323,7 +323,7 @@ class Scanner:
             raise Messages.InvalidEscapedReservedWord
             # self.Index=restore
 
-        if id=='AND' or id=='OR' :
+        if id in ['AND', 'OR']:
             type=7                      #Punctuator*/
 
         return RawToken( type=type, value=id, lineNumber=self.LineNumber, lineStart=self.LineStart, start=start, end=self.Index )
@@ -353,11 +353,9 @@ class Scanner:
     def ScanPunctuator(self):
         start=self.Index
         str=self.Source[self.Index]
-        if str=='(':
+        if str in ('(', ')', ';', ','):
             self.Index+=1
-        elif str in (')',';',','): 
-            self.Index+=1
-        else :
+        else:
             str=self.Source[self.Index:self.Index+3]
             if str=='AND' :
                 self.Index+=3
@@ -402,24 +400,23 @@ class Scanner:
 
         return RawToken( type=8, value=str, lineNumber=self.LineNumber, lineStart=self.LineStart, start=start, end=self.Index) # 8=StringLiteral
 
-    def ScanNumericLiteral(self) :
+    def ScanNumericLiteral(self):
         start=self.Index
         ch=self.Source[self.Index]
         num=''
-        if ch!='.' :
+        if ch!='.':
             num=self.Source[self.Index]
             self.Index+=1
             ch=self.Source[self.Index]
             # Hex number starts with '0x'. 16进制
-            if num=='0' :
-                if ch in ('x', 'X') :
-                    self.Index+=1
-                    return self.ScanHexLiteral(start)
+            if num == '0' and ch in ('x', 'X'):
+                self.Index+=1
+                return self.ScanHexLiteral(start)
 
             while Character.IsDecimalDigit(self.Source[self.Index]):
                 num+=self.Source[self.Index]
                 self.Index+=1
-            
+
             ch=self.Source[self.Index]
 
         if ch=='.' :
@@ -462,7 +459,7 @@ class Scanner:
             num += self.Source[self.Index]
             self.Index += 1
 
-        if len(num) == 0:
+        if num == '':
             self.ThrowUnexpectedToken()
 
         if Character.IsIdentifierStart(self.Source[self.Index]):
@@ -476,12 +473,11 @@ class Scanner:
         return id
 
     # 空格 或 注释
-    def ScanComments(self) :
-        comments=[]
-        start= self.Index==0 
-        while not self.IsEOF() :
+    def ScanComments(self):
+        start= self.Index==0
+        while not self.IsEOF():
             ch=self.Source[self.Index]
-            if Character.IsWhiteSpace(ch) : # 过滤掉空格
+            if Character.IsWhiteSpace(ch): # 过滤掉空格
                 self.Index+=1
 
             elif Character.IsLineTerminator(ch):
@@ -493,22 +489,21 @@ class Scanner:
                 self.LineStart=self.Index
                 start=True
 
-            elif ch=='/' :          # //注释
+            elif ch=='/':  # //注释
                 ch=self.Source[self.Index+1]
-                if ch=='/' :
-                    self.Index+=2
-                    comment=self.SkipSingleLineComment(2)
-                    start=True
-                else :
+                if ch != '/':
                     break
 
+                self.Index+=2
+                comment=self.SkipSingleLineComment(2)
+                start=True
             elif ch== '{' :      #{ }  注释
                 self.Index += 1
                 comment = self.SkipMultiLineComment()
-            else :
+            else:
                 break
 
-        return comments
+        return []
     
     # 多行注释
     def SkipMultiLineComment(self) :

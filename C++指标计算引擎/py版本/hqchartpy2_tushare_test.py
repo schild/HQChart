@@ -66,7 +66,7 @@ def RunIndexTest(runConfig):
 
 
 if __name__ == '__main__':
-    if (TushareConfig.HQCHART_AUTHORIZATION_KEY==None) :
+    if TushareConfig.HQCHART_AUTHORIZATION_KEY is None:
         # 请求试用账户, 把mac地址改成你本机的mac地址
         TushareConfig.HQCHART_AUTHORIZATION_KEY=FastHQChart.GetTrialAuthorize(mac="A4-B1-C1-4B-4D-7B")
     FastHQChart.Initialization(TushareConfig.HQCHART_AUTHORIZATION_KEY) # 初始化HQChartPy插件
@@ -87,7 +87,7 @@ DA:MACD.MACD#DAY,COLORGREEN;
         "Symbol":["000001.sz","600000.sh"],
 
         "OutCount":100, # 输出最新的100条数据
-    
+
         #jobID (可选)
         "JobID":str(uuid.uuid1())
     }

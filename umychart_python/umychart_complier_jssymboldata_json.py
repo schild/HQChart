@@ -25,8 +25,7 @@ class SymbolDataJson(JSSymbolData):
 
     @staticmethod # 创建函数,静态
     def Create(ast, option=None, procThrow=None):
-        obj=SymbolDataJson(ast,option,procThrow)
-        return obj  
+        return SymbolDataJson(ast,option,procThrow)  
 
     # 下载股票数据
     def GetSymbolData(self) :

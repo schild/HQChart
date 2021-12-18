@@ -31,19 +31,17 @@ class TushareHQChartData(IHQData) :
         return self.GetKLineAPIData(symbol, period, right, self.StartDate, self.EndDate)
 
     # 获取其他K线数据
-    def GetKLineData2(self, symbol, period, right, callInfo, kdataInfo, jobID) :
-        if (callInfo.find('$')>0) :
-            if (symbol.find(".")<=0) :
-                if (symbol.find("SH")==0) :
-                    symbol=symbol[2:]+".SH"
-                elif (symbol.find("SZ")==0) :
-                    symbol=symbol[2:]+".SZ"
-                else :
-                    if (symbol[:3]=='600' or symbol[:3]=="688") :
-                        symbol+=".SH"
-                    elif (symbol[:3]=="000" or symbol[:2]=="30") :
-                        symbol+=".SZ"
-                
+    def GetKLineData2(self, symbol, period, right, callInfo, kdataInfo, jobID):
+        if (callInfo.find('$') > 0) and (symbol.find(".") <= 0):
+            if (symbol.find("SH")==0):
+                symbol=symbol[2:]+".SH"
+            elif (symbol.find("SZ")==0) :
+                symbol=symbol[2:]+".SZ"
+            elif symbol[:3] in ['600', "688"]:
+                symbol+=".SH"
+            elif (symbol[:3]=="000" or symbol[:2]=="30") :
+                symbol+=".SZ"
+
 
         return self.GetKLineAPIData(symbol, period, right, kdataInfo["StartDate"], kdataInfo["EndDate"])
         
@@ -143,25 +141,21 @@ class TushareHQChartData(IHQData) :
         return self.GetDailyBasicData(symbol,"float_share")
 
     # TOTALCAPITAL  当前总股本
-    def GetTotalCapital(self,symbol, period, right, kcount, jobID) :
+    def GetTotalCapital(self,symbol, period, right, kcount, jobID):
         df=self.TusharePro.daily_basic(ts_code=symbol, trade_date=str(self.EndDate), fields='trade_date,total_share')
         print(df)
 
-        result={"type": 0}  # 类型0 单值数据
-        result["data"]=df["total_share"]*10000/100
-        return result
+        return {'type': 0, 'data': df["total_share"]*10000 / 100}
 
     # CAPITAL 最新流通股本(手)
     def GetCapital(self,symbol, period, right, kcount,jobID):
         df=self.TusharePro.daily_basic(ts_code=symbol, trade_date=str(self.EndDate), fields='trade_date,float_share')
         print(df)
 
-        result={"type": 0}  # 类型0 单值数据
-        result["data"]=df["float_share"]*10000/100
-        return result
+        return {'type': 0, 'data': df["float_share"]*10000 / 100}
 
     # https://waditu.com/document/2?doc_id=32
-    def GetDailyBasicData(self, symbol,fieldname) :
+    def GetDailyBasicData(self, symbol,fieldname):
         df=self.TusharePro.daily_basic(ts_code=symbol,start_date=str(self.StartDate), end_date=str(self.EndDate), fields='trade_date,{0}'.format(fieldname))
         df=df.sort_index(ascending=False) # 数据要降序排
         print(df)
@@ -175,34 +169,26 @@ class TushareHQChartData(IHQData) :
         else :
             aryShare=df[fieldname].tolist()
 
-        result={"type": 2}  # 类型2 根据'date'自动合并到K线数据上
-        result["data"]=aryShare
-        result["date"]=aryDate
-        return result
+        return {'type': 2, 'data': aryShare, 'date': aryDate}
 
     # https://waditu.com/document/2?doc_id=32
     def GetDailyBasicDataLatest(self, symbol,fieldname):
         df=self.TusharePro.daily_basic(ts_code=symbol, trade_date=str(self.EndDate), fields='trade_date,{0}'.format(fieldname))
         print(df)
 
-        result={"type": 0}  # 类型0 单值数据
-        if (fieldname=='circ_mv') : # 流通市值 万元
-            result["data"]=df[fieldname]*10000
-        else :
-            result["data"]=df[fieldname]
-        return result
+        return {
+            'type': 0,
+            'data': df[fieldname] * 10000
+            if (fieldname == 'circ_mv')
+            else df[fieldname],
+        }
 
     # https://waditu.com/document/2?doc_id=79
     def GetFinaIndicatorLatest(self,symbol,fieldname):
         df = self.TusharePro.fina_indicator(ts_code=symbol)
         print(df)
 
-        result={"type": 0}  # 类型0 单值数据
-        if (len(df[fieldname])>0) :
-            result["data"]=df[fieldname][0] # 取最新一期的数据
-        else :
-            result["data"]=0
-        return result
+        return {'type': 0, 'data': df[fieldname][0] if (len(df[fieldname])>0) else 0}
 
     # https://waditu.com/document/2?doc_id=36
     def GetBalanceSheetLatest(self,symbol,fieldname):
@@ -210,13 +196,10 @@ class TushareHQChartData(IHQData) :
         print(df)
 
         result={"type": 0}  # 类型0 单值数据
-        if (len(df[fieldname])>0) :
+        if (len(df[fieldname])>0):
             value=df[fieldname][0]
-            if (np.isnan(value)) :
-                result["data"]=0
-            else :
-                result["data"]=df[fieldname][0] # 取最新一期的数据
-        else :
+            result["data"] = 0 if (np.isnan(value)) else df[fieldname][0]
+        else:
             result["data"]=0
         return result
 
@@ -243,20 +226,17 @@ class TushareHQChartData(IHQData) :
 
     # 最新行情
     # https://waditu.com/document/2?doc_id=27
-    def GetDailyDataLatest(self, symbol, fieldname) :
+    def GetDailyDataLatest(self, symbol, fieldname):
         now = datetime.datetime.now()
         date = now + datetime.timedelta(days = -20)  # 取最新的20个数据
         df = self.TusharePro.daily(ts_code=symbol,start_date=str(date.year*10000+date.month*100+date.day))
         print(df)
 
         result={"type": 0}  # 类型0 单值数据
-        if (len(df[fieldname])>0) :
+        if (len(df[fieldname])>0):
             value=df[fieldname][0]
-            if (np.isnan(value)) :
-                result["data"]=0
-            else :
-                result["data"]=df[fieldname][0] # 取最新一期的数据
-        else :
+            result["data"] = 0 if (np.isnan(value)) else df[fieldname][0]
+        else:
             result["data"]=0
         return result
 
@@ -306,7 +286,6 @@ class TushareHQChartData(IHQData) :
             return self.GetBlockTrade(symbol, args)
         elif (args[0]==6):
             return self.GetHKHold(symbol,args)
-        pass
 
     # 股东人数
     def GetHolderNumber(self, symbol,args) :
@@ -401,11 +380,7 @@ class TushareHQChartData(IHQData) :
         aryDate[aryDate == ''] = 0
         aryDate = aryDate.astype(np.int).tolist()
 
-        if (args[1]==2) :   # 持股占比
-            aryData=df['ratio'].tolist()
-        else:   # 持股数量(股)
-            aryData=df['vol'].tolist()
-
+        aryData = df['ratio'].tolist() if (args[1]==2) else df['vol'].tolist()
         result={"type": 2}  # 类型2 根据'date'自动合并到K线数据上
         if (args[2]==0) :
             result["type"]=4    # 类型3 根据'date'自动合并到K线数据上 不做平滑处理
@@ -447,7 +422,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
     # right 复权 0=不复权 1=前复权 2=后复权
     # period 周期 0=日线 1=周线 2=月线 3=年线 4=1分钟 5=5分钟 6=15分钟 7=30分钟 8=60分钟 9=季线
     # TODO: 分钟的没做
-    def GetKLineAPIData(self, symbol, period, right, startDate, endDate) :
+    def GetKLineAPIData(self, symbol, period, right, startDate, endDate):
         filePath='{0}/day/{1}.csv'.format(self.CachePath,symbol)
         klineData=pd.read_csv(filePath)
         isSHSZIndex=IHQData.IsSHSZIndex(symbol) # 是否是指数
@@ -469,7 +444,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
         aryLow=list(klineData["low"])
         aryVol=list(klineData["vol"])
         aryAmount=list(klineData["amount"])
-       
+
         # 复权 0=不复权 1=前复权 2=后复权
         if (isSHSZIndex==False and right in (1,2)) :
             self.CalculateRightDayData(right,aryDate,aryYClose,aryOpen,aryHigh,aryLow,aryClose)
@@ -486,20 +461,20 @@ class TushareKLocalHQChartData(TushareHQChartData) :
             aryVol=periodData["vol"]
             aryAmount=periodData["amount"]
 
-        cacheData={}
-        cacheData['count']=len(aryDate)    # 数据个数
-        cacheData['name']=symbol            # 股票名称
-        cacheData['period']=period          # 周期
-        cacheData['right']=right            # 复权
-
-        cacheData["date"]=aryDate
-        cacheData["yclose"]=aryYClose
-        cacheData["open"]=aryOpen
-        cacheData["high"]=aryHigh
-        cacheData["low"]=aryLow
-        cacheData["close"]=aryClose
-        cacheData["vol"]=aryVol
-        cacheData["amount"]=aryAmount
+        cacheData = {
+            'count': len(aryDate),
+            'name': symbol,
+            'period': period,
+            'right': right,
+            'date': aryDate,
+            'yclose': aryYClose,
+            'open': aryOpen,
+            'high': aryHigh,
+            'low': aryLow,
+            'close': aryClose,
+            'vol': aryVol,
+            'amount': aryAmount,
+        }
 
         start=startDate
         end=endDate
@@ -573,7 +548,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                 aryYClose[index]=aryYClose[index]*seed
 
     # 计算周期
-    def CalcuatePeriodDayData(self,period, aryDate, aryYClose,aryOpen,aryHigh, aryLow, aryClose, aryVol, aryAmount) :
+    def CalcuatePeriodDayData(self,period, aryDate, aryYClose,aryOpen,aryHigh, aryLow, aryClose, aryVol, aryAmount):
         # 新的周期数据
         aryDate2=[]
         aryYClose2=[]
@@ -583,12 +558,12 @@ class TushareKLocalHQChartData(TushareHQChartData) :
         aryClose2=[]
         aryVol2=[]
         aryAmount2=[]
-        
+
         startDate=0
         newData=None
         count=len(aryDate)
         dayCount=0
-        for i in range(count) :
+        for i in range(count):
             isNewData=False
             date=aryDate[i]
             if period==1 : # 周线
@@ -596,7 +571,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                 if  fridayDate!=startDate :
                     isNewData=True
                     startDate=fridayDate
-               
+
             elif period==2 : # 月线
                 if int(date/100)!=int(startDate/100) :
                     isNewData=True
@@ -623,8 +598,8 @@ class TushareKLocalHQChartData(TushareHQChartData) :
             close=aryClose[i]
             vol=aryVol[i]
             amount=aryAmount[i]
-                  
-            if isNewData :
+
+            if isNewData:
                 if (newData!=None):
                     aryYClose2.append(newData.YClose)
                     aryOpen2.append(newData.Open)
@@ -638,7 +613,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                 newData=HistoryData()
                 newData.Date=date
 
-                if open==None or close==None:
+                if open is None or close is None:
                     continue
 
                 newData.Open=open
@@ -648,13 +623,13 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                 newData.Close=close
                 newData.Vol=vol
                 newData.Amount=amount
-            else :
-                if newData==None : 
+            else:
+                if newData is None: 
                     continue
-                if open==None or close==None :
+                if open is None or close is None:
                     continue
 
-                if newData.Open==None or newData.Close==None :
+                if newData.Open is None or newData.Close is None:
                     newData.Open=open
                     newData.High=high
                     newData.Low=low
@@ -662,7 +637,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                     newData.Close=close
                     newData.Vol=vol
                     newData.Amount=amount
-                else :
+                else:
                     if newData.High<high :
                         newData.High=high
                     if newData.Low>low :
@@ -672,7 +647,7 @@ class TushareKLocalHQChartData(TushareHQChartData) :
                     newData.Vol+=vol
                     newData.Amount+=amount
                     newData.Date=date
-         
+
         if (newData!=None):
             aryYClose2.append(newData.YClose)
             aryOpen2.append(newData.Open)
@@ -710,9 +685,9 @@ class HQResultTest():
         print(log)
 
 
-def TestSingleStock() :
+def TestSingleStock():
     TUSHARE_TOKEN=TushareConfig.TUSHARE_AUTHORIZATION_KEY
-    if (TushareConfig.HQCHART_AUTHORIZATION_KEY==None) :
+    if TushareConfig.HQCHART_AUTHORIZATION_KEY is None:
         TushareConfig.HQCHART_AUTHORIZATION_KEY=FastHQChart.GetTrialAuthorize(mac="A4-B1-C1-4B-4D-7B") # 请求试用账户, 把mac地址改成你本机的mac地址
 
     FastHQChart.Initialization(TushareConfig.HQCHART_AUTHORIZATION_KEY)
